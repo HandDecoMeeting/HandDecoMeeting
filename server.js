@@ -51,5 +51,5 @@ io.on("connection", function (socket) {
     }
   });
 
-  console.log("made socket connection");
+  console.log("made socket connection", socket.id);
 });

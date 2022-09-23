@@ -13,6 +13,7 @@ let pc = new RTCPeerConnection({
     offerToReceiveVideo: true,
   },
 });
+let videoContainer = document.querySelector("#video_container")
 
 // setup pc for webRTC
 pc.onicecandidate = (e) => {
@@ -120,17 +121,16 @@ socket.on("allUsers", (users) => {
       call_container.innerHTML += `
       <button class="call_button" data-person_to_call=${user_id}>Call ${user_id}</button>
       `;
+      videoContainer.innerHTML += `
+      <p>${user_id}</p>
+
+      <video class="othervideos" data-video_of=${user_id}
+      autoplay
+      style="width: 700px; height: 500px; background: rgba(0, 0, 0, 0.5)"></video>
+      `
+
     }
   });
-
-  if (user_id == yourID) {
-      // nothing
-    }
-    else {
-      call_container.innerHTML += `
-      <button class="call_button" data-person_to_call=${user_id}>Call ${user_id}</button>
-      `;
-    }
 
   let call_buttons = document.querySelectorAll(".call_button");
   call_buttons.forEach((call_button) => {
