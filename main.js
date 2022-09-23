@@ -39,11 +39,11 @@ let displayMediaOptions = {
   video: {
     cursor: "always",
   },
-  audio: false,
+  audio: true,
 };
 
 navigator.mediaDevices
-  .getDisplayMedia(displayMediaOptions)
+  .getDisplayMedia(displayMediaOptions) // 화면 공유 옵션
   .then(success)
   .catch(() => {
     console.log("errors with the media device");
