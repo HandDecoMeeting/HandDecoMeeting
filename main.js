@@ -4,6 +4,7 @@ let partnerVideo = document.querySelector("#remoteVideo");
 let call_container = document.querySelector("#call_container");
 let incoming_call = document.querySelector("#incoming_call");
 let yourID;
+let myInfo = document.querySelector("#myInfo");
 let candidate_to_add;
 let otherPerson;
 let pc = new RTCPeerConnection({
@@ -103,6 +104,7 @@ function call_user(person_to_call) {
 
 socket.on("yourID", (id) => {
   yourID = id;
+  myInfo.innerHTML=`${id}`
 });
 
 // when call -> do for everyone else
@@ -111,10 +113,25 @@ socket.on("allUsers", (users) => {
   let all_users = Object.keys(users);
 
   all_users.forEach((user_id) => {
-    call_container.innerHTML += `
-    <button class="call_button" data-person_to_call=${user_id}>Call</button>
-    `;
+    if (user_id == yourID) {
+      // nothing
+    }
+    else {
+      call_container.innerHTML += `
+      <button class="call_button" data-person_to_call=${user_id}>Call ${user_id}</button>
+      `;
+    }
   });
+
+  if (user_id == yourID) {
+      // nothing
+    }
+    else {
+      call_container.innerHTML += `
+      <button class="call_button" data-person_to_call=${user_id}>Call ${user_id}</button>
+      `;
+    }
+
   let call_buttons = document.querySelectorAll(".call_button");
   call_buttons.forEach((call_button) => {
     call_button.addEventListener("click", (e) => {
@@ -144,7 +161,7 @@ socket.on("recv", (data) => {
 // call from other
 socket.on("hey", (data) => {
   incoming_call.innerHTML = `
-    <h1>Someone is calling you</h1>
+    <h1>${data.from} is calling you</h1>
     <div>
       <button id="answer">Answer</button>
       <button id="decline">Decline</button>
@@ -156,9 +173,13 @@ socket.on("hey", (data) => {
 
   answer.addEventListener("click", (e) => {
     acceptCall(data.sdp, data.from);
+    incoming_call.innerHTML = "";
   });
   decline.addEventListener("click", (e) => {
     console.log("Declined call");
+    // decline 로직 없음
+    // 일단 그냥 사라지는거로 표기
+    incoming_call.innerHTML = "";
   });
 });
 
