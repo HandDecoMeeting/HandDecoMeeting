@@ -15,13 +15,15 @@ let io = socket(server);
 
 //video chat stuff
 const users = {};
+let len = 0;
 let candidate = [];
 
 io.on("connection", function (socket) {
   if (!users[socket.id]) {
     users[socket.id] = socket.id;
   }
-  socket.emit("yourID", socket.id);
+  len++
+  socket.emit("yourID", {id: socket.id, order: len});
 
   io.sockets.emit("allUsers", users);
 
@@ -33,7 +35,7 @@ io.on("connection", function (socket) {
   });
 
   socket.on("callUser", (data) => {
-    io.to(data.userToCall).emit("hey", { sdp: data.sdp, from: data.from });
+    io.to(data.userToCall).emit("hey", { sdp: data.sdp, from: data.from});
   });
 
   socket.on("acceptedCall", (data) => {
@@ -44,11 +46,13 @@ io.on("connection", function (socket) {
 
   socket.on("candidate", (data) => {
     candidate.push(data.candidate);
+    console.log(candidate, data.check, socket.id);
 
-    if (candidate.length < 2) {
-      io.sockets.emit("recv", { candidate: candidate[0], id: socket.id });
-    } else {
-    }
+    // if (candidate.length < 2) { // candidate가 하나면?
+
+      io.sockets.emit("recv", { candidate: data.candidate, id: socket.id });
+    // } else {
+    // }
   });
 
   console.log("made socket connection", socket.id);
