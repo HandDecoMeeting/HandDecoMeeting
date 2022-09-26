@@ -2,7 +2,7 @@ let socket = io.connect("http://localhost:4000");
 let UserVideo = document.querySelector("#localVideo");
 let partnerVideo = document.querySelector("#remoteVideo");
 //let UserAudio = document.querySelector('#localAudio');
-//let partnerAudio = document.querySelector('#remoteAudio');
+let partnerAudio = document.querySelector('#remoteAudio');
 let call_container = document.querySelector("#call_container");
 let incoming_call = document.querySelector("#incoming_call");
 let yourID;
@@ -29,25 +29,37 @@ pc.onicecandidate = (e) => {
 
 pc.oniceconnectionstatechange = (e) => {};
 
-pc.ontrack = (e) => {
-  partnerVideo.srcObject = e.streams[0]; //상대의 stream받아와서 video.srcObject로 넣어주면 실시간으로 영상 볼 수 있음
+
+/*
+const openMediaDevices = async (constraints) => { // 내장 마이크
+  return await navigator.mediaDevices.getUserMedia(constraints);
+}
+
+try {
+  const stream = openMediaDevices({'video':true, 'audio':true});
+  console.log('Got MediaStream:', stream);
+} catch(error) {
+  console.error('Error accessing media devices.', error);
+}
+*/
+const success = (stream) => {
+  UserVideo.srcObject = stream;
+  pc.addStream(stream);
 };
 
 const openMediaDevices = async (constraints) => { // 내장 마이크
   return await navigator.mediaDevices.getUserMedia(constraints);
 }
 
-try {
-  const stream = openMediaDevices({'video':false, 'audio':true});
-  console.log('Got MediaStream:', stream);
-} catch(error) {
-  console.error('Error accessing media devices.', error);
-}
-
-const success = (stream) => {
-  UserVideo.srcObject = stream;
-  pc.addStream(stream);
-};
+navigator.mediaDevices
+  .getUserMedia({
+    audio: true,
+    video: false
+  })
+  .then(success)
+  .catch(() => {
+    console.log("errors with the user media");
+  });
 
 let displayMediaOptions = { // 공유화면 옵션 설정
   video: {
@@ -55,14 +67,17 @@ let displayMediaOptions = { // 공유화면 옵션 설정
   },
   audio: false,
 };
-
+  
 navigator.mediaDevices // 화면 공유
   .getDisplayMedia(displayMediaOptions)
   .then(success)
   .catch(() => {
-    console.log("errors with the media device");
+    console.log("errors with the display media");
   });
 
+pc.ontrack = (e) => {
+  partnerVideo.srcObject = e.streams[0]; //상대의 stream받아와서 video.srcObject로 넣어주면 실시간으로 영상 볼 수 있음
+};
 
 
 // call a user
