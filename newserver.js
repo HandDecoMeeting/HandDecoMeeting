@@ -1,16 +1,16 @@
 let express = require("express");
 let socket = require("socket.io");
-var static = require('serve-static');
+const path = require('path')
 
 //App setup
 let app = express();
-app.set('port', process.env.PORT || 8080);
-app.set('host', '127.0.0.1'); // 루프백 주소(?)
-app.use(static(__dirname));
-
+app.set('port', process.env.PORT || 4000);
 let server = app.listen(app.get('port'), function () {
-  console.log("listening to requests on port 8080");
+  console.log("listening to requests on port 4000");
 });
+
+app.use(express.static(__dirname));
+app.use(express.static(path.join(__dirname,'node_modules')));
 
 var router = express.Router();
 router.route('/').get(function(req, res) {
@@ -26,9 +26,23 @@ app.all('*', function(req, res){
 //socket setup
 let io = socket(server);
 
-//video chat stuff
-const users = {};
+/////////////////////////////
+const peers = {};
 
 io.on("connection", function (socket) {
   console.log("new");
+  
+  peers[socket.id] = socket;
+
+  // setup new peer connection
+  for (let id in peers) {
+    if(id == socket.id) continue;
+
+    peers[id].emit('newUserArr', socket.id)
+  }
+
+  socket.on('sayHiToNewBie', new_id => {
+    console.log(socket.id + " said hi to " + new_id);
+    peers[new_id].emit('newbieSaysThx', socket.id)
+  })
 });

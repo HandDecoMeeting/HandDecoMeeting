@@ -8,6 +8,7 @@
     "nodemon": "^2.0.4",
     "socket.io": "^2.3.0",
     "uniq": "^1.0.1",
+    "simple-peer": "^9.7.0",
     "serve-static": "^1.15.0"
   },
   "devDependencies": {},
@@ -15,6 +16,6 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node newserver.js"
   },
-  "author": "Gerald",
+  "author": "",
   "license": "ISC"
 }
