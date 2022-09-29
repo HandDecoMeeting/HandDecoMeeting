@@ -2,7 +2,7 @@ let socket = io.connect("http://localhost:4000");
 let UserVideo = document.querySelector("#localVideo");
 let partnerVideo = document.querySelector("#remoteVideo");
 //let UserAudio = document.querySelector('#localAudio');
-let partnerAudio = document.querySelector('#remoteAudio');
+//let partnerAudio = document.querySelector('#remoteAudio');
 let call_container = document.querySelector("#call_container");
 let incoming_call = document.querySelector("#incoming_call");
 let yourID;
@@ -14,7 +14,7 @@ let pc = new RTCPeerConnection({
     offerToReceiveVideo: true,
   },
 });
-let audioTrack, videoTrack, stream;
+//let audioTrack, videoTrack, stream;
 
 // setup pc for webRTC
 // 피어들이 offer와 answer 받으면 icecandidate이벤트 실행
@@ -37,11 +37,11 @@ try {
 } catch(error) {
   console.error('Error accessing media devices.', error);
 }*/
-
+/*
 const success = (stream) => {
   UserVideo.srcObject = stream;
   pc.addStream(stream);
-};
+};*/
 
 const openMediaDevices = async (constraints) => { // 내장 마이크
   return await navigator.mediaDevices.getUserMedia(constraints);
@@ -54,6 +54,25 @@ let displayMediaOptions = { // 공유화면 옵션 설정
   audio: false,
 };
 
+const success = (stream) => {
+  UserVideo.srcObject = stream;
+  pc.addStream(stream);
+
+async function getScreenshareWithMic(){
+  const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+  const audio = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+  return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
+}
+
+getScreenshareWithMic()
+.then(success)
+  console.log("errors with the user media");
+};
+
+pc.ontrack = (e) => {
+  partnerVideo.srcObject = e.streams[0];//new MediaStream([e.track]); //상대의 stream받아와서 video.srcObject로 넣어주면 실시간으로 영상 볼 수 있음
+}; 
+/*
 navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
 .then(async displayStream => {
     [videoTrack] = displayStream.getVideoTracks();
@@ -69,11 +88,29 @@ navigator.mediaDevices.getDisplayMedia(displayMediaOptions)
     //stream = new MediaStream([videoTrack, audioTrack]); // do stuff
 })
 .then(success)
-.catch(console.error);
+.catch(console.error);*/
+/*
+const capture = async () => {
+  const videoConstraints = { video: true };
+  const audioConstraints = { audio: true };
+  const screen = await navigator.mediaDevices.getUserMedia(videoConstraints);
+  navigator.mediaDevices.getDisplayMedia(videoConstraints);
 
-pc.ontrack = (e) => {
-  partnerVideo.srcObject = e.streams[0];//new MediaStream([e.track]); //상대의 stream받아와서 video.srcObject로 넣어주면 실시간으로 영상 볼 수 있음
-}; 
+  // Display them on video elements
+  UserVideo.srcObject = screen;
+  pc.addStream(screen);
+  // Both getDisplayMedia and getUserMedia
+  // can capture sound however, I found
+  // it's easier to reason with if the audio is
+  // captured and stored separately
+  const audio = await navigator.mediaDevices.getDisplayMedia(audioConstraints);
+
+  // return the 3 streams that we will later need to
+  // combine with a MediaRecorder
+  stream = new MediaStream([screen, audio]);
+}
+
+success;*/
 /*
 navigator.mediaDevices
   .getUserMedia({
