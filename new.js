@@ -15,16 +15,33 @@ let displayMediaOptions = {
     video: {
         cursor: "always",
     },
-    audio: true,
+    audio: false,
 };
 
 const success = (stream) => {
    
 };
 
+async function getScreenshareWithMic(){
+    const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+    const audio = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+    return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
+  }
+
+getScreenshareWithMic()
+.then(success => {
+    UserVideo.srcObject = success;
+    localStream = stream;
+
+    init();
+})
+.catch(() => {
+  console.log("errors with the media device");
+})
+/*
 navigator.mediaDevices
   .getDisplayMedia(displayMediaOptions) // 화면 공유 옵션
-//   .then(success)
+   .then(success)
     .then ( stream => {
         userVideo.srcObject = stream;
         localStream = stream;
@@ -33,7 +50,7 @@ navigator.mediaDevices
     })
   .catch(() => {
     console.log("errors with the media device");
-});
+});*/
 
 // redirect if not https
 // if(location.href.substr(0,5) !== 'https') 
