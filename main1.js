@@ -33,13 +33,20 @@ pc.onicecandidate = (e) => {
 };
 
 pc.ontrack = (e) => {
-  partnerVideo.srcObject = e.streams[0]; //상대의 stream받아와서 video.srcObject로 넣어주면 실시간으로 영상 볼 수 있음
+  partnerVideo.srcObject = e.streams[0]; // 상대의 stream받아와서 video.srcObject로 넣어주면 실시간으로 영상 볼 수 있음
 };
 
-const success = (stream) => {
-  UserVideo.srcObject = stream;
+const success = (stream) => { // 통로에 스트림 추가
   pc.addStream(stream);
+  //UserVideo.srcObject = stream;
 };
+/*
+const put_uservideo = (stream) => {
+  //pc.addStream(stream);
+  UserVideo.srcObject = stream;
+};*/
+
+var constraints = {audio: { echoCancellation: false }, video: false} // 음성 하울링 없애기
 
 const openMediaDevices = async (constraints) => { // 내장 마이크
 	return await navigator.mediaDevices.getUserMedia(constraints);
@@ -52,17 +59,27 @@ let displayMediaOptions = { // 공유화면 옵션 설정
   audio: false,
 };
   
-  async function getScreenshareWithMic(){
-    const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-    const audio = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
-    return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
+  async function getScreenshareWithMic(){ // 음성+화면 하나의 스트림으로 합치기
+    const screen = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+    const audio = await navigator.mediaDevices.getUserMedia(constraints);
+    //.then(stream => audio.srcObject = stream)
+    //.catch(e => log(e));
+    UserVideo.srcObject = screen; // 화면 스트림만(본인 마이크 소리는x) 자신에게 보내기
+    return new MediaStream([audio.getAudioTracks()[0], screen.getVideoTracks()[0]]);
   }
 
-getScreenshareWithMic()
+getScreenshareWithMic() // 합친 스트림 송출
   .then(success)
   .catch(() => {
   console.log("errors with the media device");
 })
+/*
+navigator.mediaDevices
+  .getDisplayMedia(displayMediaOptions)
+  .then(put_uservideo)
+  .catch(() => {
+    console.log("errors with the media device");
+  });*/
 
 // call a user
 function createOffer(person_to_call) {
