@@ -22,26 +22,25 @@ const success = (stream) => {
    
 };
 
-async function getScreenshareWithMic(){
-    const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-    const audio = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
-    return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
-  }
+// async function getScreenshareWithMic(){
+//     const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+//     const audio = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
+//     return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
+//   }
 
-getScreenshareWithMic()
-.then(success => {
-    UserVideo.srcObject = success;
-    localStream = stream;
+// getScreenshareWithMic()
+// .then(success => {
+//     UserVideo.srcObject = success;
+//     localStream = stream;
 
-    init();
-})
-.catch(() => {
-  console.log("errors with the media device");
-})
-/*
+//     init();
+// })
+// .catch(() => {
+//   console.log("errors with the media device");
+// })
+
 navigator.mediaDevices
   .getDisplayMedia(displayMediaOptions) // 화면 공유 옵션
-   .then(success)
     .then ( stream => {
         userVideo.srcObject = stream;
         localStream = stream;
@@ -50,11 +49,7 @@ navigator.mediaDevices
     })
   .catch(() => {
     console.log("errors with the media device");
-});*/
-
-// redirect if not https
-// if(location.href.substr(0,5) !== 'https') 
-//     location.href = 'https' + location.href.substr(4, location.href.length - 4)
+});
 
 ////////////// CONFIG //////////////
 const configRTC = {
@@ -87,9 +82,7 @@ function init() {
     socket.on('newUserArr', socket_id => {
         console.log(socket_id + " = new!");
         addPeer(socket_id, false);
-        console.log("여기를 안하니?")   
         socket.emit('sayHiToNewbie', socket_id);
-        console.log(" 하는데...")
         //initsenddddd
     })
 
@@ -124,7 +117,6 @@ function addPeer(id, isInit) {
     });
 
     peers[id].on('signal', data => {
-        console.log("해줘 제발")
         socket.emit('signala', {
             signal: data,
             socket_id: id
@@ -136,6 +128,7 @@ function addPeer(id, isInit) {
         let newVideo = document.createElement('video');
         newVideo.srcObject = stream;
         newVideo.id = id;
+        newVideo.autoplay = true
         videoContainer.appendChild(newVideo);
     });
 

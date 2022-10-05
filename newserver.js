@@ -44,7 +44,6 @@ io.on("connect", (socket) => {
 
     peers[id].emit('newUserArr', socket.id)
     // emit initReceive
-    console.log("이거ㅗ 하잖아");
   }
 
   //(initSenddd) emit initsend
