@@ -18,38 +18,33 @@ let displayMediaOptions = {
     audio: false,
 };
 
-const success = (stream) => {
-   
-};
 
-// async function getScreenshareWithMic(){
-//     const stream = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-//     const audio = await navigator.mediaDevices.getUserMedia({audio: true, video: false});
-//     return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
-//   }
+var constraints = {
+    audio: {echoCancellation: false},
+    video: false
+}
 
-// getScreenshareWithMic()
-// .then(success => {
-//     UserVideo.srcObject = success;
-//     localStream = stream;
+// 이 함수는 안쓰는 것 같은디
+// const openMediaDevices = async (constraints) => { // 내장 마이크
+//     return await navigator.mediaDevices.getUserMedia(constraints);
+// }
 
-//     init();
-// })
-// .catch(() => {
-//   console.log("errors with the media device");
-// })
+async function getScreenshareWithMic(){
+    const screen = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+    const audio = await navigator.mediaDevices.getUserMedia(constraints);
+    userVideo.srcObject = screen;
+    return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
+}
 
-navigator.mediaDevices
-  .getDisplayMedia(displayMediaOptions) // 화면 공유 옵션
-    .then ( stream => {
-        userVideo.srcObject = stream;
-        localStream = stream;
-      
-        init();
-    })
-  .catch(() => {
-    console.log("errors with the media device");
-});
+getScreenshareWithMic()
+.then(stream => {
+    localStream = stream;
+
+    init();
+})
+.catch(() => {
+  console.log("errors with the media device");
+})
 
 ////////////// CONFIG //////////////
 const configRTC = {
