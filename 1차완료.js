@@ -115,7 +115,7 @@ function addPeer(id, isInit) {
         stream: localStream,
         config: configRTC
     });
-
+    
     peers[id].on('signal', data => {
         socket.emit('signala', {
             signal: data,

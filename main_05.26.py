@@ -359,7 +359,7 @@ while True:
 
     else:
         cont == 0
-
+        
     points = [bpoints, gpoints, rpoints]
     colors = [black, green, red]
     # 이때까지 쌓아두었던 points 들에 대한 연산

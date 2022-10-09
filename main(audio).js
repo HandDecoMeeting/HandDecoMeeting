@@ -25,7 +25,6 @@ let pc2 = new RTCPeerConnection(optionsRTC);
 let pc = [pc1, pc2]; //, pc3];
 let order;
 let partnerIndex = 0; // 연결 성공 수
-
 let videoContainer = document.querySelector("#video_container")
 
 // 처음 창 접속하고 화면공유

@@ -33,7 +33,7 @@ io.on("connection", function (socket) {
     candidate = [];
     io.sockets.emit("available_users", users);
   });
-
+  
   socket.on("callUser", (data) => {
     io.to(data.userToCall).emit("hey", { sdp: data.sdp, from: data.from});
   });

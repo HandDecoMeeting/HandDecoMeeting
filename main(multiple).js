@@ -9,7 +9,6 @@ let optionsRTC = {
 let userVideo = document.querySelector("#localVideo");
 let localStream = null;
 
-
 ////////////// SETUP //////////////
 let displayMediaOptions = {
     video: {
