@@ -6,13 +6,20 @@
       content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
     />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Document</title>
+    
+    <script
+    type="text/javascript"
+    src="/socket.io/socket.io.js"
+    ></script>
+    <script src="/simple-peer/simplepeer.min.js"></script>
+    
+    <title>손꾸팅</title>
   </head>
   <body>
     <h1>AR-Note via WebRTC</h1>
 
     <div style="display: flex; flex-direction: column">
-      <h1>My Screen</h1>
+      <h1 id="myInfo">My Screen</h1>
       <video
         id="localVideo"
         autoplay
@@ -20,22 +27,20 @@
       ></video>
 
       <h1>Other Screen</h1>
-      <video
+      <!-- <video
         id="remoteVideo"
         autoplay
         style="width: 700px; height: 500px; background: rgba(0, 0, 0, 0.5)"
-      ></video>
+      ></video> -->
 
       <div id="call_container" style="display: flex"></div>
 
       <div id="incoming_call"></div>
+
+      <div id="video_container"></div>
+
     </div>
 
-    <script
-      type="text/javascript"
-      src="http://localhost:4000/socket.io/socket.io.js"
-    ></script>
-
-    <script src="main.js"></script>
+    <script src="new.js"></script>
   </body>
 </html>
