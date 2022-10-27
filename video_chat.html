@@ -17,25 +17,31 @@
     
     <title>손꾸팅</title>
   </head>
-  <!-- <py-env>
-    - cv2
-    - mediapipe
-    - collections
-    - pyautogui
-    - datetime
-  </py-env> -->
+  <!-- <py-config type="toml">
+    paths = ["./test.py"]
+  </py-config> -->
+  <py-config type="toml">
+    packages = ["numpy", "matplotlib"]
+    paths = ["./test.py"]
+  </py-config>
 
   <body>
+    <div id="pyscript">
+      <!-- <py-script>
+      def test(*args):
+        print("test")
+      </py-script> -->
+      <!-- <py-script src="./test.py"></py-script> -->
+      <py-script>
+        from test import make_x_and_y
+        x, y = make_x_and_y(n=1)
+        print(x, "+", y)
+      </py-script>
+    </div>
     <h1>AR-Note via WebRTC</h1>
 
     <div style="display: flex; flex-direction: column">
-      <py-button id="pyscript-click" onClick="test">test</py-button>
-      <div id="pyscript">
-        <py-script>
-        def test(*args):
-          print("test")
-        </py-script>
-      </div>
+      <!-- <py-button id="pyscript-click" onClick="test">test</py-button> -->
       <h1 id="myInfo">My Screen</h1>
       <video
         id="localVideo"
