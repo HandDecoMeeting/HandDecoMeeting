@@ -49,9 +49,9 @@ import gc
 import numpy as np
 
 
-캡쳐 = cv2.VideoCapture('pixabay-6387.mp4')
+cap = cv2.VideoCapture(0)
 
-프레임번호 = 0
+frnum = 0
 canvas = document.getElementById("view")
 ctx = canvas.getContext("2d")
 
@@ -62,16 +62,15 @@ def draw_image(ctx, x, y, image):
   ctx.putImageData(image_data, 0, 0, x, y, width, height)
 
 def ShowFrame():
-  global 캡쳐, 그래프, cv2, 프레임번호, document
-  캡쳐.set(cv2.CAP_PROP_POS_FRAMES, 프레임번호)
-  ret, frame = 캡쳐.read() # 두 개의 값을 반환하므로 두 변수 지정
+  cap.set(cv2.CAP_PROP_POS_FRAMES, frnum)
+  ret, frame = cap.read() # 두 개의 값을 반환하므로 두 변수 지정
   
-  reverse = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+  #reverse = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
   
   
-  draw_image(ctx, 0, 0, reverse)
-  document.getElementById('frameNo').innerHTML=프레임번호
-  프레임번호=프레임번호+10
+  draw_image(ctx, 0, 0, ret)
+  document.getElementById('frameNo').innerHTML=frnum
+  frnum += +10
   gc.collect()
   setTimeout(ShowFrameProxy, 0)
 
