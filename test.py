@@ -25,13 +25,13 @@ def draw_image(ctx, x, y, image):
 
 def ShowFrame():
   global cap, frnum, ShowFrameProxy
-  cap.set(cv2.CAP_PROP_POS_FRAMES, frnum)
+  # cap.set(cv2.CAP_PROP_POS_FRAMES, frnum)
   ret, frame = cap.read() # 두 개의 값을 반환하므로 두 변수 지정
   
-  reverse = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+  # reverse = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
   
-  draw_image(ctx, 0, 0, reverse)
+  draw_image(ctx, 0, 0, frame)
   document.getElementById('frameNo').innerHTML=frnum
-  frnum=frnum+10
+  # frnum=frnum+10
   gc.collect()
   setTimeout(ShowFrameProxy, 0)
