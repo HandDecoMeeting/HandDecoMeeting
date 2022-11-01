@@ -8,7 +8,7 @@ let optionsRTC = {
 }
 let userVideo = document.querySelector("#localVideo");
 let localStream = null;
-
+let localName = null;
 
 ////////////// SETUP //////////////
 let displayMediaOptions = {
@@ -18,16 +18,11 @@ let displayMediaOptions = {
     audio: false,
 };
 
-
 var constraints = {
     audio: {echoCancellation: false},
     video: false
 }
 
-// 이 함수는 안쓰는 것 같은디
-// const openMediaDevices = async (constraints) => { // 내장 마이크
-//     return await navigator.mediaDevices.getUserMedia(constraints);
-// }
 
 async function getScreenshareWithMic(){
     const screen = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
@@ -36,16 +31,24 @@ async function getScreenshareWithMic(){
     return new MediaStream([audio.getAudioTracks()[0], screen.getVideoTracks()[0]]);
 }
 
-getScreenshareWithMic()
-.then(stream => {
-    localStream = stream;
-
-    init();
-})
+setProfile()
+.then(
+    getScreenshareWithMic()
+    .then(stream => {
+        localStream = stream;
+    
+        init();
+    })
+    .catch((e) => {
+        console.log(e);
+      console.log("errors with the media device");
+    })
+)
 .catch((e) => {
     console.log(e);
-  console.log("errors with the media device");
-})
+    console.log("errors with prompt");
+}
+)
 
 ////////////// CONFIG //////////////
 const configRTC = {
@@ -65,6 +68,8 @@ const configRTC = {
     ],
 }
 
+
+
 ////////////// INIT //////////////
 function init() {
     socket = io()
@@ -72,13 +77,21 @@ function init() {
     socket.on('getInfo', socket_id => {
         let info = document.getElementById("myInfo");
         info.innerHTML += ' '+socket_id;
+        info.innerHTML += '<br /> name: ' + localName;
+        socket.emit('setName', {
+            new_id: socket_id,
+            name: localName
+        });
     })
 
     // initReceieve
     socket.on('newUserArr', socket_id => {
         console.log(socket_id + " = new!");
         addPeer(socket_id, false);
-        socket.emit('sayHiToNewbie', socket_id);
+        socket.emit('sayHiToNewbie', {
+            new_id: socket_id,
+            name: localName
+        });
         //initsenddddd
     })
 
@@ -89,7 +102,7 @@ function init() {
     })
 
     socket.on('signal', data => {
-        peers[data.socket_id].signal(data.signal);
+        peers[data.socket_id][0].signal(data.signal);
     })
 
     socket.on('disconnect', () => {
@@ -106,26 +119,38 @@ function init() {
  *                  Set to false if the peer receives the connection. 
  */
 function addPeer(id, isInit) {
-    peers[id] = new SimplePeer({
+    peers[id] = [new SimplePeer({
         initiator: isInit,
         stream: localStream,
         config: configRTC
-    });
+    })];
 
-    peers[id].on('signal', data => {
+    peers[id][0].on('signal', data => {
         socket.emit('signala', {
             signal: data,
             socket_id: id
         })
     });
 
-    peers[id].on('stream', stream => {
+    peers[id][0].on('stream', stream => {
         let videoContainer = document.querySelector("#video_container")
         let newVideo = document.createElement('video');
+        newVideo.style.width = 700;
+        newVideo.style.height = 500;
         newVideo.srcObject = stream;
         newVideo.id = id;
         newVideo.autoplay = true
         videoContainer.appendChild(newVideo);
     });
 
+}
+
+
+/////// setprofile //////
+async function setProfile(socketID)
+{
+    while(!localName)
+    {
+        localName = await prompt("이름을 입력하세요.", "익명");
+    }
 }

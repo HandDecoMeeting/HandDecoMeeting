@@ -32,30 +32,33 @@ let peers = {};
 io.on("connect", (socket) => {
   console.log("new");
   
-  peers[socket.id] = socket;
+  peers[socket.id] = [socket];
   socket.emit('getInfo', socket.id);
+  socket.on('setName', data => {
+      peers[socket.id].push(data.name);
+  });
 
   // setup new peer connection
   for (let id in peers) {
     if(id === socket.id) continue;
 
-    peers[id].emit('newUserArr', socket.id)
+    peers[id][0].emit('newUserArr', socket.id)
     // emit initReceive
   }
 
   //(initSenddd) emit initsend
-  socket.on('sayHiToNewbie', new_id => {
-    console.log(socket.id + " said hi to " + new_id);
-    peers[new_id].emit('newbieSaysThx', socket.id)
+  socket.on('sayHiToNewbie', data => {
+    console.log(socket.id + " said hi to " + data.name);
+    peers[data.new_id][0].emit('newbieSaysThx', socket.id)
   })
 
   // socket for transfering signals in the middle
   socket.on("signala", data => {
     console.log(socket.id, "->", data.socket_id);
-    if(!peers[data.socket_id]) {
+    if(!peers[data.socket_id][0]) {
       console.log("maybe for disconnections");
     }
-    peers[data.socket_id].emit('signal', {
+    peers[data.socket_id][0].emit('signal', {
       socket_id: socket.id,
       signal: data.signal
     })
