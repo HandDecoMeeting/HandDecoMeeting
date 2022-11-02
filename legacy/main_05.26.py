@@ -1,9 +1,117 @@
 import cv2
 import mediapipe as mp
+import time
+#mp_drawing = mp.solutions.drawing_utils
+#mp_drawing_styles = mp.solutions.drawing_styles
+#mp_face_mesh = mp.solutions.face_mesh
 from collections import deque
 import pyautogui
 from datetime import date
 
+# camera
+wCam, hCam = 1080, 720
+
+# 노트북 내장캠 사용시 0, 별도의 웹캠 사용시 1
+cap = cv2.VideoCapture(0) # camera object
+cap.set(3, wCam)
+cap.set(4, hCam)
+
+pTime = 0
+
+mpDraw = mp.solutions.drawing_utils
+mpFaceMesh = mp.solutions.face_mesh
+faceMesh = mpFaceMesh.FaceMesh(
+    max_num_faces=1,
+    refine_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5)
+drawSpec = mpDraw.DrawingSpec(thickness=1, circle_radius=1)
+
+
+"""
+drawing_spec = mp_drawing.DrawingSpec(thickness=1, circle_radius=1)
+with mp_face_mesh.FaceMesh(
+    max_num_faces=1,
+    refine_landmarks=True,
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+    ) as face_mesh:
+    while cap.isOpened():
+        success, img1 = cap.read()
+        if not success:
+            print("웹캠을 찾을 수 없습니다.")
+            break
+
+        img1.flags.writeable = False
+        img1RGB = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+        results = face_mesh.process(img1)
+
+        img1RGB.flags.writeable = True
+        imgBGR = cv2.cvtColor(img1RGB, cv2.COLOR_RGB2BGR)
+        if results.multi_face_landmarks:
+            for face_landmarks in results.multi_face_landmarks:
+                mp_drawing.draw_landmarks(
+                    img1=img1,
+                    landmark_list=face_landmarks,
+                    connections=mp_face_mesh.FACEMESH_TESSELATION,
+                    landmark_drawing_spec=None,
+                    connection_drawing_spec=mp_drawing_styles
+                    .get_default_face_mesh_tesselation_style())
+                mp_drawing.draw_landmarks(
+                    img1=img1,
+                    landmark_list=face_landmarks,
+                    connections=mp_face_mesh.FACEMESH_CONTOURS,
+                    landmark_drawing_spec=None,
+                    connection_drawing_spec=mp_drawing_styles
+                  .get_default_face_mesh_contours_style())
+                mp_drawing.draw_landmarks(
+                    img1=img1,
+                    landmark_list=face_landmarks,
+                    connections=mp_face_mesh.FACEMESH_IRISES,
+                    landmark_drawing_spec=None,
+                    connection_drawing_spec=mp_drawing_styles
+                   .get_default_face_mesh_iris_connections_style())
+cv2.imshow('MediaPipe Face Mesh', cv2.flip(image, 1))
+
+#Face Mesh
+mp_face_mesh = mp.solutions.face_mesh
+face_mesh = mp_face_mesh.FaceMesh(
+    min_detection_confidence=0.5,
+    min_tracking_confidence=0.5
+    )
+
+success, img1 = cap.read()
+img1 = cv2.flip(img1, 1) #flip
+h, w, c = img1.shape
+img1RGB = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+# To improve performance.
+img1RGB.flags.writeable = True
+results =  face_mesh.process(img1RGB)
+if results.multi_face_landmarks:
+    for face_landmarks in results.multi_face_landmarks:
+        mp_drawing.draw_landmarks(
+            img1RGB=img1RGB,
+            landmark_list=face_landmarks,
+            connections=mp_face_mesh.FACEMESH_TESSELATION,
+            landmark_drawing_spec=None,
+            connection_drawing_spec=mp_drawing_styles
+            .get_default_face_mesh_tesselation_style())
+        mp_drawing.draw_landmarks(
+            img1RGB=img1RGB,
+            landmark_list=face_landmarks,
+            connections=mp_face_mesh.FACEMESH_CONTOURS,
+            landmark_drawing_spec=None,
+            connection_drawing_spec=mp_drawing_styles
+            .get_default_face_mesh_contours_style())
+        mp_drawing.draw_landmarks(
+            img1RGB=img1RGB,
+            landmark_list=face_landmarks,
+            connections=mp_face_mesh.FACEMESH_IRISES,
+            landmark_drawing_spec=None,
+            connection_drawing_spec=mp_drawing_styles
+            .get_default_face_mesh_iris_connections_style())
+cv2.imshow('MediaPipe Face Mesh', img1RGB)
+"""
 # pen
 red = (0, 0, 255)
 green = (0, 255, 0)
@@ -26,13 +134,7 @@ red_index = 0
 
 # thick index
 thick_index = 0
-# camera
-wCam, hCam = 1080, 720
 
-# 노트북 내장캠 사용시 0, 별도의 웹캠 사용시 1
-cap = cv2.VideoCapture(0) # camera object
-cap.set(3, wCam)
-cap.set(4, hCam)
 
 
 
@@ -70,6 +172,7 @@ bpoints = [deque(maxlen=1024)]
 gpoints = [deque(maxlen=1024)]
 rpoints = [deque(maxlen=1024)]
 thickpoints = [deque(maxlen=1024)]
+
 
 # 일단 계속 돌아가게 설정
 while True:
@@ -256,7 +359,7 @@ while True:
 
     else:
         cont == 0
-
+        
     points = [bpoints, gpoints, rpoints]
     colors = [black, green, red]
     # 이때까지 쌓아두었던 points 들에 대한 연산
@@ -269,9 +372,27 @@ while True:
                 cv2.line(img, points[i][j][k - 1][:2], points[i][j][k][:2], colors[i], points[i][j][k-1][2])
     #cv2.putText(img, str(totalFingers), (45, 60), cv2.FONT_HERSHEY_PLAIN, 5, (0, 0, 0), 10)
     # canvas[canvas_height - h:, canvas_width - w:] = img # adding camera image to canvas
-    cv2.imshow("Drawing", img)
+
+
+#Face Filter
+    results = faceMesh.process(imgRGB)
+    if results.multi_face_landmarks:
+        for faceLms in results.multi_face_landmarks:
+            mpDraw.draw_landmarks(img, faceLms,mpFaceMesh.FACEMESH_CONTOURS, drawSpec, drawSpec)
+
+            for id,lm in enumerate(faceLms.landmark):
+                #print(lm)
+                ih, iw, ic = img.shape
+                x,y = int(lm.x*iw), int(lm.y*ih)
+                # print(id, x,y)
+
+    cTime = time.time()
+    fps = 1/(cTime-pTime)
+    pTime = cTime
+    #cv2.putText(img1, f'FPS:{int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1, (0,255,0), 2)
+    cv2.imshow("FaceFilter", img)
     if cv2.waitKey(1) & 0xFF == ord("q"):
-        break
+      break
 
 cap.release()
 cv2.destroyAllWindows()
