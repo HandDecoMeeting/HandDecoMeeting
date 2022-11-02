@@ -76,10 +76,10 @@ function init() {
     socket = io()
 
     socket.on('getInfo', socket_id => {
-        let info = document.getElementById("myInfo");
         localID = socket_id;
-        info.innerHTML += ' '+socket_id;
-        info.innerHTML += '<br /> name: ' + localName;
+        // let info = document.getElementById("myInfo");
+        // info.innerHTML += ' '+socket_id;
+        // info.innerHTML += '<br /> name: ' + localName;
         socket.emit('setName', {
             new_id: socket_id,
             name: localName
@@ -143,15 +143,21 @@ function addPeer(id, isInit, name) {
     });
 
     peers[id][0].on('stream', stream => {
-        let videoContainer = document.querySelector("#video_container")
+        let newCol = document.createElement('div');
+        newCol.setAttribute('class', 'col videoCol');
+        newCol.innerHTML = `<h3>${name}'s Screen</h3>`;
+
         let newVideo = document.createElement('video');
         newVideo.style.width = 700;
-        newVideo.style.height = 500;
+        newVideo.style.height = 450;
         newVideo.srcObject = stream;
         newVideo.id = id;
         newVideo.dataset.name = peers[id][1];
-        newVideo.autoplay = true
-        videoContainer.appendChild(newVideo);
+        newVideo.autoplay = true;
+        newCol.appendChild(newVideo);
+
+        let videoContainer = document.querySelector("#video_container")
+        videoContainer.appendChild(newCol);
     });
 
 }
