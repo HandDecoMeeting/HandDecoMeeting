@@ -85,11 +85,13 @@ function init() {
     })
 
     // initReceieve
-    socket.on('newUserArr', socket_id => {
-        console.log(socket_id + " = new!");
-        addPeer(socket_id, false);
+    socket.on('newUserArr', data => {
+        console.log(data.socket_id + " = new!");
+        addPeer(data.socket_id, false);
+        peers[data.socket_id].push(data.name); // 이름 추가
+        console.log(data.name, " newbie name ", data.socket_id)
         socket.emit('sayHiToNewbie', {
-            new_id: socket_id,
+            new_id: data.socket_id,
             name: localName
         });
         //initsenddddd

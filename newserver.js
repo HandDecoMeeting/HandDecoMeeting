@@ -36,15 +36,15 @@ io.on("connect", (socket) => {
   socket.emit('getInfo', socket.id);
   socket.on('setName', data => {
       peers[socket.id].push(data.name);
+      // setup new peer connection
+      for (let id in peers) {
+        if(id === socket.id) continue;
+
+        peers[id][0].emit('newUserArr', socket.id)
+        // emit initReceive
+      }
   });
 
-  // setup new peer connection
-  for (let id in peers) {
-    if(id === socket.id) continue;
-
-    peers[id][0].emit('newUserArr', socket.id)
-    // emit initReceive
-  }
 
   //(initSenddd) emit initsend
   socket.on('sayHiToNewbie', data => {
