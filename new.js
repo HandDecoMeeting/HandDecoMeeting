@@ -179,6 +179,6 @@ async function setProfile(socketID)
 function muteSound() {
     for (let index in localStream.getAudioTracks()) {
         localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
-        muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+        muteButton.innerHTML = localStream.getAudioTracks()[index].enabled ? '<i class="fa-solid fa-microphone fa-lg"></i>' : '<i class="fa-solid fa-microphone-slash fa-lg"></i>'
     }
 }
