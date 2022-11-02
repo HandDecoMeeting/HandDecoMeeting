@@ -33,7 +33,10 @@ io.on("connect", (socket) => {
   console.log("new");
   
   peers[socket.id] = [socket];
-  socket.emit('getInfo', socket.id);
+  socket.emit('getInfo', {
+    socket_id: socket.id,
+    count: Object.keys(peers).length
+  });
   socket.on('setName', data => {
       peers[socket.id].push(data.name);
       // setup new peer connection
@@ -42,13 +45,12 @@ io.on("connect", (socket) => {
 
         peers[id][0].emit('newUserArr', {
           newbieID: socket.id,
-          newbieName: data.name // peers[socket.id][1]
+          newbieName: data.name, // peers[socket.id][1]
+          count: Object.keys(peers).length
         })
         // emit initReceive
       }
   });
-
-  
 
   //(initSenddd) emit initsend
   socket.on('sayHiToNewbie', data => {
@@ -71,4 +73,14 @@ io.on("connect", (socket) => {
       signal: data.signal
     })
   })
+
+    socket.on('disconnect', () => {
+      console.log('socket disconnected ' + socket.id)
+      let save = socket.id
+      delete peers[socket.id]
+      socket.broadcast.emit('removePeer', {
+        socket_id: save,
+        count: Object.keys(peers).length
+      })
+    })
 });

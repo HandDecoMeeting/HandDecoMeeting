@@ -75,17 +75,23 @@ const configRTC = {
 function init() {
     socket = io()
 
-    socket.on('getInfo', socket_id => {
-        localID = socket_id;
+    socket.on('getInfo', data => {
+        localID = data.socket_id;
 
         var now = new Date(); 
         var s = now.toLocaleString('en-us',{month:'long', day: 'numeric', hour:
-        '2-digit', minute: '2-digit', second: "2-digit"}); 
+        '2-digit', minute: '2-digit'}); 
 
         let info = document.getElementById("info");
-        info.innerHTML += `접속일시: ${s}<br />이름: ${localName}`;
+        info.innerHTML += `접속 일시: ${s}<br />이름: ${localName}<br />`;
+
+        let ppl = document.createElement('span');
+        ppl.id = 'count';
+        ppl.innerHTML = `참여 인원: ${data.count}명`;
+        info.appendChild(ppl);
+
         socket.emit('setName', {
-            new_id: socket_id,
+            new_id: data.socket_id,
             name: localName
         });
     })
@@ -93,6 +99,10 @@ function init() {
     // initReceieve
     socket.on('newUserArr', data => {
         console.log(data.newbieID + " = new!");
+        
+        let ppl = document.getElementById('count');
+        ppl.innerHTML = `참여 인원: ${data.count}명`;
+        
         // console.log(socket_id + " = new!");
         addPeer(data.newbieID, false, data.newbieName);
         // addPeer(socket_id, false);
@@ -117,9 +127,14 @@ function init() {
         peers[data.socket_id][0].signal(data.signal);
     })
 
-    socket.on('disconnect', () => {
-        console.log('disconnected')
-    });
+    socket.on('removePeer', data => {
+        console.log('removing peer ' + data.socket_id)
+        removePeer(data.socket_id)
+
+        let ppl = document.getElementById('count');
+        ppl.innerHTML = `참여 인원: ${data.count}명`;
+
+    })
 }
 
 /**
@@ -176,9 +191,31 @@ async function setProfile(socketID)
     }
 }
 
+
+//////// mute /////////
 function muteSound() {
     for (let index in localStream.getAudioTracks()) {
         localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
         muteButton.innerHTML = localStream.getAudioTracks()[index].enabled ? '<i class="fa-solid fa-microphone fa-lg"></i>' : '<i class="fa-solid fa-microphone-slash fa-lg"></i>'
     }
+}
+
+////// delete disconnected //////
+function removePeer(socket_id) {
+
+    let videoEl = document.getElementById(socket_id)
+    if (videoEl) {
+
+        const tracks = videoEl.srcObject.getTracks();
+
+        tracks.forEach(function (track) {
+            track.stop()
+        })
+
+        videoEl.srcObject = null
+        let videoDiv = videoEl.parentNode
+        videoDiv.parentNode.removeChild(videoDiv)
+    }
+    if (peers[socket_id][0]) peers[socket_id][0].destroy()
+    delete peers[socket_id]
 }
