@@ -9,6 +9,7 @@ let optionsRTC = {
 let userVideo = document.querySelector("#localVideo");
 let localStream = null;
 let localName = null;
+let localID = null;
 
 ////////////// SETUP //////////////
 let displayMediaOptions = {
@@ -76,6 +77,7 @@ function init() {
 
     socket.on('getInfo', socket_id => {
         let info = document.getElementById("myInfo");
+        localID = socket_id;
         info.innerHTML += ' '+socket_id;
         info.innerHTML += '<br /> name: ' + localName;
         socket.emit('setName', {
@@ -85,20 +87,26 @@ function init() {
     })
 
     // initReceieve
-    socket.on('newUserArr', socket_id => {
-        console.log(socket_id + " = new!");
-        addPeer(socket_id, false);
+    socket.on('newUserArr', data => {
+        console.log(data.newbieID + " = new!");
+        // console.log(socket_id + " = new!");
+        addPeer(data.newbieID, false, data.newbieName);
+        // addPeer(socket_id, false);
+        // peers[data.socket_id].push(data.name); // 이름 추가 -> addPeer에서!
+        
+        // console.log(data.name, " newbie name ", data.socket_id)
         socket.emit('sayHiToNewbie', {
-            new_id: socket_id,
+            // new_id: data.socket_id,
+            new_id: data.newbieID,
             name: localName
         });
         //initsenddddd
     })
 
     // on initsend
-    socket.on('newbieSaysThx', socket_id => {
-        console.log("newbie thanks ", socket_id);
-        addPeer(socket_id, true);
+    socket.on('newbieSaysThx', data => {
+        console.log("newbie thanks ", data.socket_id, data.addName);
+        addPeer(data.socket_id, true, data.addName);
     })
 
     socket.on('signal', data => {
@@ -118,12 +126,14 @@ function init() {
  *                  Set to true if the peer initiates the connection process.
  *                  Set to false if the peer receives the connection. 
  */
-function addPeer(id, isInit) {
+function addPeer(id, isInit, name) {
     peers[id] = [new SimplePeer({
         initiator: isInit,
         stream: localStream,
         config: configRTC
     })];
+
+    peers[id].push(name);
 
     peers[id][0].on('signal', data => {
         socket.emit('signala', {
@@ -139,6 +149,7 @@ function addPeer(id, isInit) {
         newVideo.style.height = 500;
         newVideo.srcObject = stream;
         newVideo.id = id;
+        newVideo.dataset.name = peers[id][1];
         newVideo.autoplay = true
         videoContainer.appendChild(newVideo);
     });

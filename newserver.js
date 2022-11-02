@@ -36,20 +36,28 @@ io.on("connect", (socket) => {
   socket.emit('getInfo', socket.id);
   socket.on('setName', data => {
       peers[socket.id].push(data.name);
+      // setup new peer connection
+      for (let id in peers) {
+        if(id === socket.id) continue;
+
+        peers[id][0].emit('newUserArr', {
+          newbieID: socket.id,
+          newbieName: data.name // peers[socket.id][1]
+        })
+        // emit initReceive
+      }
   });
 
-  // setup new peer connection
-  for (let id in peers) {
-    if(id === socket.id) continue;
-
-    peers[id][0].emit('newUserArr', socket.id)
-    // emit initReceive
-  }
+  
 
   //(initSenddd) emit initsend
   socket.on('sayHiToNewbie', data => {
-    console.log(socket.id + " said hi to " + data.name);
-    peers[data.new_id][0].emit('newbieSaysThx', socket.id)
+    console.log(data.new_id + " hi from " + data.name);
+    console.log("current socket id is ", socket.id)
+    peers[data.new_id][0].emit('newbieSaysThx', {
+      socket_id: socket.id,
+      addName: data.name
+    })
   })
 
   // socket for transfering signals in the middle
