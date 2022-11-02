@@ -85,7 +85,7 @@ function init() {
         let info = document.getElementById("info");
         info.innerHTML += `접속 일시: ${s}<br />이름: ${localName}<br />`;
 
-        let ppl = document.createElement('div');
+        let ppl = document.createElement('span');
         ppl.id = 'count';
         ppl.innerHTML = `참여 인원: ${data.count}명`;
         info.appendChild(ppl);
@@ -130,7 +130,7 @@ function init() {
     socket.on('removePeer', data => {
         console.log('removing peer ' + data.socket_id)
         removePeer(data.socket_id)
-        
+
         let ppl = document.getElementById('count');
         ppl.innerHTML = `참여 인원: ${data.count}명`;
 
