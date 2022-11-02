@@ -175,3 +175,10 @@ async function setProfile(socketID)
         localName = await prompt("이름을 입력하세요.", "익명");
     }
 }
+
+function muteSound() {
+    for (let index in localStream.getAudioTracks()) {
+        localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
+        muteButton.innerText = localStream.getAudioTracks()[index].enabled ? "Unmuted" : "Muted"
+    }
+}
