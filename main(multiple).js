@@ -2,13 +2,12 @@ let socket; // = io.connect("http://localhost:4000");
 let peers = {}
 let optionsRTC = {
     configuration: {
-        offerToReceiveAudio: false,
+        offerToReceiveAudio: true,
         offerToReceiveVideo: true,
     }
 }
 let userVideo = document.querySelector("#localVideo");
 let localStream = null;
-
 
 ////////////// SETUP //////////////
 let displayMediaOptions = {
@@ -46,6 +45,7 @@ getScreenshareWithMic()
     console.log(e);
   console.log("errors with the media device");
 })
+
 
 ////////////// CONFIG //////////////
 const configRTC = {
