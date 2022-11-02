@@ -77,9 +77,13 @@ function init() {
 
     socket.on('getInfo', socket_id => {
         localID = socket_id;
-        // let info = document.getElementById("myInfo");
-        // info.innerHTML += ' '+socket_id;
-        // info.innerHTML += '<br /> name: ' + localName;
+
+        var now = new Date(); 
+        var s = now.toLocaleString('en-us',{month:'long', day: 'numeric', hour:
+        '2-digit', minute: '2-digit', second: "2-digit"}); 
+
+        let info = document.getElementById("info");
+        info.innerHTML += `접속일시: ${s}<br />이름: ${localName}`;
         socket.emit('setName', {
             new_id: socket_id,
             name: localName
