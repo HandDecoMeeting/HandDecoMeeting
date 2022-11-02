@@ -48,8 +48,6 @@ io.on("connect", (socket) => {
       }
   });
 
-  
-
   //(initSenddd) emit initsend
   socket.on('sayHiToNewbie', data => {
     console.log(data.new_id + " hi from " + data.name);
@@ -71,4 +69,10 @@ io.on("connect", (socket) => {
       signal: data.signal
     })
   })
+
+    socket.on('disconnect', () => {
+      console.log('socket disconnected ' + socket.id)
+      socket.broadcast.emit('removePeer', socket.id)
+      delete peers[socket.id]
+    })
 });

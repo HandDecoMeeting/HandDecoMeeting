@@ -80,10 +80,10 @@ function init() {
 
         var now = new Date(); 
         var s = now.toLocaleString('en-us',{month:'long', day: 'numeric', hour:
-        '2-digit', minute: '2-digit', second: "2-digit"}); 
+        '2-digit', minute: '2-digit'}); 
 
         let info = document.getElementById("info");
-        info.innerHTML += `접속일시: ${s}<br />이름: ${localName}`;
+        info.innerHTML += `접속 일시: ${s}<br />이름: ${localName}`;
         socket.emit('setName', {
             new_id: socket_id,
             name: localName
@@ -117,9 +117,10 @@ function init() {
         peers[data.socket_id][0].signal(data.signal);
     })
 
-    socket.on('disconnect', () => {
-        console.log('disconnected')
-    });
+    socket.on('removePeer', socket_id => {
+        console.log('removing peer ' + socket_id)
+        removePeer(socket_id)
+    })
 }
 
 /**
@@ -176,9 +177,31 @@ async function setProfile(socketID)
     }
 }
 
+
+//////// mute /////////
 function muteSound() {
     for (let index in localStream.getAudioTracks()) {
         localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
         muteButton.innerHTML = localStream.getAudioTracks()[index].enabled ? '<i class="fa-solid fa-microphone fa-lg"></i>' : '<i class="fa-solid fa-microphone-slash fa-lg"></i>'
     }
+}
+
+////// delete disconnected //////
+function removePeer(socket_id) {
+
+    let videoEl = document.getElementById(socket_id)
+    if (videoEl) {
+
+        const tracks = videoEl.srcObject.getTracks();
+
+        tracks.forEach(function (track) {
+            track.stop()
+        })
+
+        videoEl.srcObject = null
+        let videoDiv = videoEl.parentNode
+        videoDiv.parentNode.removeChild(videoDiv)
+    }
+    if (peers[socket_id][0]) peers[socket_id][0].destroy()
+    delete peers[socket_id]
 }
