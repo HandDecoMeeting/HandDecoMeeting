@@ -76,10 +76,14 @@ function init() {
     socket = io()
 
     socket.on('getInfo', socket_id => {
-        let info = document.getElementById("myInfo");
         localID = socket_id;
-        info.innerHTML += ' '+socket_id;
-        info.innerHTML += '<br /> name: ' + localName;
+
+        var now = new Date(); 
+        var s = now.toLocaleString('en-us',{month:'long', day: 'numeric', hour:
+        '2-digit', minute: '2-digit', second: "2-digit"}); 
+
+        let info = document.getElementById("info");
+        info.innerHTML += `접속일시: ${s}<br />이름: ${localName}`;
         socket.emit('setName', {
             new_id: socket_id,
             name: localName
@@ -143,15 +147,21 @@ function addPeer(id, isInit, name) {
     });
 
     peers[id][0].on('stream', stream => {
-        let videoContainer = document.querySelector("#video_container")
+        let newCol = document.createElement('div');
+        newCol.setAttribute('class', 'col videoCol');
+        newCol.innerHTML = `<h3>${name}'s Screen</h3>`;
+
         let newVideo = document.createElement('video');
         newVideo.style.width = 700;
-        newVideo.style.height = 500;
+        newVideo.style.height = 450;
         newVideo.srcObject = stream;
         newVideo.id = id;
         newVideo.dataset.name = peers[id][1];
-        newVideo.autoplay = true
-        videoContainer.appendChild(newVideo);
+        newVideo.autoplay = true;
+        newCol.appendChild(newVideo);
+
+        let videoContainer = document.querySelector("#video_container")
+        videoContainer.appendChild(newCol);
     });
 
 }
@@ -163,5 +173,12 @@ async function setProfile(socketID)
     while(!localName)
     {
         localName = await prompt("이름을 입력하세요.", "익명");
+    }
+}
+
+function muteSound() {
+    for (let index in localStream.getAudioTracks()) {
+        localStream.getAudioTracks()[index].enabled = !localStream.getAudioTracks()[index].enabled
+        muteButton.innerHTML = localStream.getAudioTracks()[index].enabled ? '<i class="fa-solid fa-microphone fa-lg"></i>' : '<i class="fa-solid fa-microphone-slash fa-lg"></i>'
     }
 }
