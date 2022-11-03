@@ -16,6 +16,7 @@
 
 
 import os
+from tkinter.tix import DisplayStyle
 import cv2 # pip install opencv-python
 import time
 import numpy as np # pip install numpy
@@ -27,11 +28,9 @@ from datetime import date
 
 # In[61]:
 
-
+# 얼굴인식망 구조
 mp_face_mesh = mp.solutions.face_mesh
-
-face_mesh = mp_face_mesh.FaceMesh ( 
-    max_num_faces=1,
+face_mesh = mp_face_mesh.FaceMesh (
     #static_image_mode=False,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
@@ -91,19 +90,23 @@ rpoints = [deque(maxlen=1024)]
 thickpoints = [deque(maxlen=1024)]
 
 num_icons = []
+button_icons = []
 effect_icons = {}
 icon_root = "../icons"
+button_icon_root = "../icons/ui/buttons"
+button_icon_path = os.path.join(icon_root, "ui/buttons")
+
 num_icon_root = "../icons/ui/nums"
 num_icon_path = os.path.join(icon_root, "ui/nums")
 default_icon_path = os.path.join(icon_root, "ui/na.png")
 files = os.listdir(num_icon_root)
-effects = ["eye", "shade", "nose", "cigar", "mustache", "mask"]
+button_files = os.listdir(button_icon_root)
+effects = ["eye", "shade", "nose", "mustache", "mask"]
 current_effect = None
 effect_icon_counter = {
     "eye": 0,
     "shade": 0,
     "nose": 0,
-    "cigar": 0,
     "mustache": 0,
     "mask": 0
 }
@@ -111,7 +114,6 @@ current_effect_icons = {
     "eye": None,
     "shade": None,
     "nose": None,
-    "cigar": None,
     "mustache": None,
     "mask": None
 }
@@ -120,18 +122,17 @@ effect_commands = {
     ord('2'): "shade",
     ord('3'): "nose",
     ord('4'): "mustache",
-    ord('5'): "cigar",
-    ord('6'): "mask",
+    ord('5'): "mask",
 }
 status_panel_effect_icon_cordinates = {
-    "eye": {'y': 340, "y+h": 370, 'x': 250, "x+w": 310},
-    "shade": {'y': 385, "y+h": 415, 'x': 250, "x+w": 310},
-    "nose": {'y': 430, "y+h": 460, 'x': 250, "x+w": 310},
-    "mustache": {'y': 475, "y+h": 505, 'x': 250, "x+w": 310},
-    "cigar": {'y': 520, "y+h": 550, 'x': 250, "x+w": 310},
-    "mask": {'y': 565, "y+h": 595, 'x': 250, "x+w": 310}
+    "eye": {'y': 370, "y+h": 400, 'x': 250, "x+w": 310},
+    "shade": {'y': 420, "y+h": 450, 'x': 250, "x+w": 310},
+    "nose": {'y': 470, "y+h": 500, 'x': 250, "x+w": 310},
+    "mustache": {'y': 520, "y+h": 550, 'x': 250, "x+w": 310},
+    "mask": {'y': 570, "y+h": 600, 'x': 250, "x+w": 310},
+    #"mask": {'y': 565, "y+h": 595, 'x': 250, "x+w": 310}
 }
-inc_dec_commands = [ord('+'), ord('-')]
+inc_dec_commands = [0x270000, 0x250000] # 얼굴필터 넘기는 방향키
 
 for effect in effects:
     icons = os.listdir(os.path.join(icon_root, effect))
@@ -142,9 +143,14 @@ for file in files:
     icon = cv2.resize(icon, (30, 30))
     num_icons.append(icon)
 
+for button_file in button_files:
+    button = cv2.imread(os.path.join(button_icon_root, button_file))
+    button = cv2.resize(button, (40, 40))
+    button_icons.append(button)
+
 # In[63]:
 
-
+# 얼굴인식망에서 landmark 추출
 def get_landmarks(image):
     landmarks = []
     height, width = image.shape[0:2]
@@ -167,14 +173,14 @@ def get_landmarks(image):
 
 # In[64]:
 
-
+# landmark와 얼굴 명칭 연결
 def get_effect_cordinates(landmarks):
     effect_cordinates = {
         "eye_left": (landmarks[30], (landmarks[158][0], landmarks[145][1])),
         "eye_right": (landmarks[287], (landmarks[260][0], landmarks[381][1])),
         "shade": (landmarks[71], (landmarks[294][0], landmarks[119][1])),
         "nose": ((landmarks[51][0], landmarks[4][1]), (landmarks[281][0], landmarks[3][1])),
-        "cigar": (landmarks[16], (landmarks[273][0], landmarks[195][1])),
+        #"cigar": (landmarks[16], (landmarks[273][0], landmarks[195][1])),
         "mustache": ((landmarks[148][0], landmarks[3][1]), ((landmarks[148][0]+(landmarks[3][0]-landmarks[148][0])*2), landmarks[41][1])),
         "mask": (landmarks[124], (landmarks[324][0], landmarks[153][1]))
     }
@@ -183,7 +189,7 @@ def get_effect_cordinates(landmarks):
 
 # In[65]:
 
-
+# 얼굴필터 이미지 수정
 def remove_image_whitespace(image, blend, x, y, threshold=225):
     for i in range(blend.shape[0]):
         for j in range(blend.shape[1]):
@@ -269,28 +275,40 @@ def draw_face_effects(image, cordinates):
 # In[71]:
 
 
-def setup_status_panel(display, fps, num_faces=1, eye_font_col=(0, 0, 255), shade_font_col=(0, 0, 255),
-                       nose_font_col=(0, 0, 255), mustache_font_col=(0, 0, 255), 
-                       cigar_font_col=(0, 0, 255), mask_font_col=(0, 0, 255)):
-    display[340:370, 32:62, :] = num_icons[0]
-    display[385:415, 32:62, :] = num_icons[1]
-    display[430:460, 32:62, :] = num_icons[2]
-    display[475:505, 32:62, :] = num_icons[3]
-    display[520:550, 32:62, :] = num_icons[4]
-    display[565:595, 32:62, :] = num_icons[5]
-    
-    cv2.circle(display, (170, 225), 80, (255, 0, 0), 2)
-    cv2.putText(display, "FPS: {}".format(fps), (245, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 192), 1)
-    cv2.putText(display, "LIVE", (35, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (0, 0, 255), 2)
-    cv2.putText(display, "Face Effects", (35, 100), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
-    cv2.putText(display, "Faces", (125, 210), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2)
-    cv2.putText(display, "{:02}".format(num_faces), (128, 270), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3)
-    cv2.putText(display, "Eyes", (120, 362), cv2.FONT_HERSHEY_SIMPLEX, 0.6, eye_font_col, 1)
-    cv2.putText(display, "Shade", (120, 410), cv2.FONT_HERSHEY_SIMPLEX, 0.6, shade_font_col, 1)
-    cv2.putText(display, "Nose", (120, 455), cv2.FONT_HERSHEY_SIMPLEX, 0.6, nose_font_col, 1)
-    cv2.putText(display, "Mustache", (120, 500), cv2.FONT_HERSHEY_SIMPLEX, 0.6, mustache_font_col, 1)
-    cv2.putText(display, "Cigar", (120, 544), cv2.FONT_HERSHEY_SIMPLEX, 0.6, cigar_font_col, 1)
-    cv2.putText(display, "Mask", (120, 588), cv2.FONT_HERSHEY_SIMPLEX, 0.6, mask_font_col, 1)
+def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_col=(255, 255, 255),
+                       nose_font_col=(255, 255, 255), mustache_font_col=(255, 255, 255), 
+                        mask_font_col=(255, 255, 255)):
+    display[368:398, 32:62, :] = num_icons[0]
+    display[418:448, 32:62, :] = num_icons[1]
+    display[468:498, 32:62, :] = num_icons[2]
+    display[518:548, 32:62, :] = num_icons[3]
+    display[568:598, 32:62, :] = num_icons[4]
+    #display[565:595, 32:62, :] = num_icons[5]
+
+    display[220:250, 180:210, :] = num_icons[0]
+    display[220:250, 245:275, :] = num_icons[4]
+
+    display[25:65, 120:160, :] = button_icons[2]
+    display[265:305, 180:220, :] = button_icons[0]
+    display[265:305, 230:270, :] = button_icons[1]
+
+    #cv2.circle(display, (170, 225), 80, (255, 0, 0), 2)
+    #cv2.putText(display, "FPS: {}".format(fps), (245, 28), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 192), 1)
+    #cv2.putText(display, "LIVE", (35, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
+    cv2.putText(display, "Exit:", (35, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+    cv2.putText(display, "Face Filters", (35, 190), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
+    cv2.putText(display, "select:     ~", (35, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+    cv2.putText(display, "swipe:", (35, 290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+    #button1 = cv2.imread("../icons/buttons/right")
+    #button1 = cv2.resize(icon, (30, 30))
+    #display[70:100, 250:280, :] = button1
+
+    #cv2.putText(display, "{:02}".format(num_faces), (128, 270), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3)
+    cv2.putText(display, "Eyes", (100, 390), cv2.FONT_HERSHEY_SIMPLEX, 0.8, eye_font_col, 1)
+    cv2.putText(display, "Glasses", (100, 440), cv2.FONT_HERSHEY_SIMPLEX, 0.8, shade_font_col, 1)
+    cv2.putText(display, "Nose", (100, 490), cv2.FONT_HERSHEY_SIMPLEX, 0.8, nose_font_col, 1)
+    cv2.putText(display, "Mustache", (100, 540), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mustache_font_col, 1)
+    cv2.putText(display, "Mask", (100, 590), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mask_font_col, 1)
 
 # In[72]:
 
@@ -327,42 +345,39 @@ def app(video_source):
             display[:, :350, :] = status_panel
             
             if current_effect is None:
-                setup_status_panel(display, fps, num_faces=faces)
+                setup_status_panel(display, fps)
             elif current_effect == "eye":
-                setup_status_panel(display, fps, num_faces=faces, eye_font_col=(0, 255, 0))
+                setup_status_panel(display, fps, eye_font_col=(0, 0, 255))
             elif current_effect == "shade":
-                setup_status_panel(display, fps, num_faces=faces, shade_font_col=(0, 255, 0))
+                setup_status_panel(display, fps, shade_font_col=(0, 0, 255))
             elif current_effect == "nose":
-                setup_status_panel(display, fps, num_faces=faces, nose_font_col=(0, 255, 0))
+                setup_status_panel(display, fps, nose_font_col=(0, 0, 255))
             elif current_effect == "mustache":
-                setup_status_panel(display, fps, num_faces=faces, mustache_font_col=(0, 255, 0))
-            elif current_effect == "cigar":
-                setup_status_panel(display, fps, num_faces=faces, cigar_font_col=(0, 255, 0))
+                setup_status_panel(display, fps,  mustache_font_col=(0, 0, 255))
             elif current_effect == "mask":
-                setup_status_panel(display, fps, num_faces=faces, mask_font_col=(0, 255, 0))
+                setup_status_panel(display, fps,  mask_font_col=(0, 0, 255))
         else:
             break
 
-        imgRGB = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) # BGR to RGB
+        imgRGB = cv2.cvtColor(display, cv2.COLOR_BGR2RGB) # BGR to RGB
         # imgRGB에 대하여 손이 있는지 mediapipe 연산을 통하여 찾는다
         results = hands.process(imgRGB) # searching for a hand
+        hand_detect = results.multi_hand_landmarks
 
         #text 오른쪽 (가로-오른쪽방향, 세로-아래방향)
-        #cv2.rectangle(img, (w-400, 60), (w-10, 500), (255, 255, 255), -1)
-        cv2.putText(frame, "Date: " + date.today().strftime("%Y%m%d"), (width-350, 50), cv2.FONT_HERSHEY_PLAIN, 2, black, 2)
-        hand_detect = results.multi_hand_landmarks
-        #cv2.putText(display, "Thickness : " + str(thick), (width-350, 100), cv2.FONT_HERSHEY_PLAIN, 2, black, 2)
-        cv2.putText(frame, "Pen color: ", (width-350, 150), cv2.FONT_HERSHEY_PLAIN, 2, black, 2) # 색깔
-        cv2.circle(frame, (width-150, 140), 15, green, -1)
-        cv2.circle(frame, (width-100, 140), 15, black, -1)
-        cv2.circle(frame, (width-50, 140), 15, red, -1)
+        cv2.putText(display, "Date: " + date.today().strftime("%Y%m%d"), (1300-350, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
+        cv2.putText(display, "Thickness : " + str(thick), (1300-350, 100), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
+        cv2.putText(display, "Pen color: ", (1300-350, 150), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2) # 색깔
+        cv2.circle(display, (1300-150, 140), 15, green, -1)
+        cv2.circle(display, (1300-100, 140), 15, black, -1)
+        cv2.circle(display, (1300-50, 140), 15, red, -1)
         
-        c_w = width-150
-        if( draw_color == black ): c_w = width-100
-        if( draw_color == red ): c_w = width-50
-        cv2.circle(frame, (c_w, 140), 18, white, 3)
+        c_w = 1300-150
+        if( draw_color == black ): c_w = 1300-100
+        if( draw_color == red ): c_w = 1300-50
+        cv2.circle(display, (c_w, 140), 18, white, 3)
 
-        cv2.putText(frame, "Hand detect: " + str(bool(hand_detect)), (width-350, 200), cv2.FONT_HERSHEY_PLAIN, 2, black, 2) # 손 측정
+        cv2.putText(display, "Hand detect: " + str(bool(hand_detect)), (1300-350, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2) # 손 측정
 
         flag = 1
         # 손을 찾았다면 OK
@@ -468,12 +483,11 @@ def app(video_source):
                         black_index = 0
                         green_index = 0
                         red_index = 0
-                        #thick_index = 0
 
                     print(totalFingers)
                     
-                    cv2.putText(display, "Finger Count: "+str(totalFingers), (width-350, 250), cv2.FONT_HERSHEY_PLAIN, 2, black, 2)
-                    cv2.putText(display, "Func: "+function, (width-350, 300), cv2.FONT_HERSHEY_PLAIN, 2, black, 2)
+                    cv2.putText(display, "Finger Count: "+str(totalFingers), (1300-350, 250), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
+                    cv2.putText(display, "Func: "+function, (1300-350, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
 
                 else: # 손을 제대로 인식하지 못했을 경우 그냥 탈출
                     break
@@ -483,12 +497,12 @@ def app(video_source):
                 index_lm_x = handLms.landmark[8].x # x for 2nd finger
                 index_lm_y = handLms.landmark[8].y # y for 2nd finger
 
-                # !손가락 1개가 아니라면
+                # 손가락 1개가 아니라면
                 # 현상태를 유지하면서, 나의 위치는 다음번에 사용하기 위해
                 # 이전 (px, py) 로 사용한다
                 if (flag) : # finger is not 1
-                    px = int(1080 * (1 - index_lm_x))
-                    py = int(720 * index_lm_y)
+                    px = int(1300 * (1 - index_lm_x))
+                    py = int(650 * index_lm_y)
                     bpoints.append(deque(maxlen=512))
                     black_index += 1
                     gpoints.append(deque(maxlen=512))
@@ -498,10 +512,10 @@ def app(video_source):
 
                     break
 
-                # !손가락이 1개인 경우
+                # 손가락이 1개인 경우
                 # 나의 위치에서 (px, py) 로 그림을 과정이 필요하다
-                nx, ny = int(index_lm_x * width), int(index_lm_y * height) # relative xy pos
-                cv2.putText(display, "Pen pos. ("+str(nx)+","+str(ny)+")", (width-350, 350), cv2.FONT_HERSHEY_PLAIN, 2, black, 2)
+                nx, ny = int(index_lm_x * 1300), int(index_lm_y * 625) # relative xy pos
+                cv2.putText(display, "Pen pos. ("+str(nx)+","+str(ny)+")", (1300-350, 350), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
 
                 center = (nx, ny, thickness)
                 if draw_color == black:
@@ -533,7 +547,7 @@ def app(video_source):
                     cv2.line(display, points[i][j][k - 1][:2], points[i][j][k][:2], colors[i], points[i][j][k-1][2])
 
         cv2.imshow("Live Face Effects", display)
-        k = cv2.waitKey(1)
+        k = cv2.waitKeyEx(1)
             
         if k in effect_commands:
             if k == pre_k:
@@ -542,14 +556,12 @@ def app(video_source):
                 current_effect, pre_k = effect_commands[k], k
             
         elif k in inc_dec_commands and current_effect is not None:
+        #elif current_effect is not None:
             if k == inc_dec_commands[0]:
                 set_effect_icon(current_effect)
             elif k == inc_dec_commands[1]:
                 set_effect_icon(current_effect, step=-1)
-        elif k == 27:
-            break
-
-        if k & 0xFF == ord("q"):
+        elif k == 27: #ESC 로 종료
             break
 
 
