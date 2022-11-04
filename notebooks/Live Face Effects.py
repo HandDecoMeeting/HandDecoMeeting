@@ -425,7 +425,7 @@ def app(video_source):
                     if (totalFingers == 0): #screenshot
                         function = "screenshot"
                         if (src == 0):
-                            pyautogui.screenshot().save('./screenshot' + date.today().strftime("%Y%m%d") + str(src_cnt) + '.png')
+                            pyautogui.screenshot().save('../screenshot/' + date.today().strftime("%Y%m%d") + str(src_cnt) + '.png')
                             src_cnt += 1
                         src = 1
 
