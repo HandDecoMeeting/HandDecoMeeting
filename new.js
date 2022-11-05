@@ -24,33 +24,6 @@ var constraints = {
     video: false
 }
 
-
-async function getScreenshareWithMic(){
-    const screen = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
-    const audio = await navigator.mediaDevices.getUserMedia(constraints);
-    userVideo.srcObject = screen;
-    return new MediaStream([audio.getAudioTracks()[0], screen.getVideoTracks()[0]]);
-}
-
-setProfile()
-.then(
-    getScreenshareWithMic()
-    .then(stream => {
-        localStream = stream;
-    
-        init();
-    })
-    .catch((e) => {
-        console.log(e);
-      console.log("errors with the media device");
-    })
-)
-.catch((e) => {
-    console.log(e);
-    console.log("errors with prompt");
-}
-)
-
 ////////////// CONFIG //////////////
 const configRTC = {
     iceServers: [
@@ -72,6 +45,31 @@ const configRTC = {
 
 
 ////////////// INIT //////////////
+
+async function getScreenshareWithMic(){
+    const screen = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
+    const audio = await navigator.mediaDevices.getUserMedia(constraints);
+    userVideo.srcObject = screen;
+    return new MediaStream([audio.getAudioTracks()[0], screen.getVideoTracks()[0]]);
+}
+
+setProfile()
+.then(
+    getScreenshareWithMic()
+    .then(stream => {
+        localStream = stream;
+    
+        init();
+    })
+    .catch((e) => {
+      console.log("errors with the media device\n", e);
+    })
+).catch((e) => {
+        console.log("errors with prompt\n", e);
+    }
+)
+
+
 function init() {
     socket = io()
 
@@ -98,28 +96,19 @@ function init() {
 
     // initReceieve
     socket.on('newUserArr', data => {
-        console.log(data.newbieID + " = new!");
         
         let ppl = document.getElementById('count');
         ppl.innerHTML = `참여 인원: ${data.count}명`;
-        
-        // console.log(socket_id + " = new!");
         addPeer(data.newbieID, false, data.newbieName);
-        // addPeer(socket_id, false);
-        // peers[data.socket_id].push(data.name); // 이름 추가 -> addPeer에서!
         
-        // console.log(data.name, " newbie name ", data.socket_id)
         socket.emit('sayHiToNewbie', {
-            // new_id: data.socket_id,
             new_id: data.newbieID,
             name: localName
         });
-        //initsenddddd
     })
 
     // on initsend
     socket.on('newbieSaysThx', data => {
-        console.log("newbie thanks ", data.socket_id, data.addName);
         addPeer(data.socket_id, true, data.addName);
     })
 
@@ -128,7 +117,6 @@ function init() {
     })
 
     socket.on('removePeer', data => {
-        console.log('removing peer ' + data.socket_id)
         removePeer(data.socket_id)
 
         let ppl = document.getElementById('count');
@@ -180,7 +168,6 @@ function addPeer(id, isInit, name) {
 
 }
 
-
 /////// setprofile //////
 async function setProfile(socketID)
 {
@@ -189,7 +176,6 @@ async function setProfile(socketID)
         localName = await prompt("이름을 입력하세요.", "익명");
     }
 }
-
 
 //////// mute /////////
 function muteSound() {

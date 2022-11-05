@@ -30,13 +30,13 @@ var router = express.Router();
 let peers = {};
 
 io.on("connect", (socket) => {
-  console.log("new");
-  
   peers[socket.id] = [socket];
+
   socket.emit('getInfo', {
     socket_id: socket.id,
     count: Object.keys(peers).length
   });
+
   socket.on('setName', data => {
       peers[socket.id].push(data.name);
       // setup new peer connection
@@ -54,8 +54,6 @@ io.on("connect", (socket) => {
 
   //(initSenddd) emit initsend
   socket.on('sayHiToNewbie', data => {
-    console.log(data.new_id + " hi from " + data.name);
-    console.log("current socket id is ", socket.id)
     peers[data.new_id][0].emit('newbieSaysThx', {
       socket_id: socket.id,
       addName: data.name
@@ -64,10 +62,6 @@ io.on("connect", (socket) => {
 
   // socket for transfering signals in the middle
   socket.on("signala", data => {
-    console.log(socket.id, "->", data.socket_id);
-    if(!peers[data.socket_id][0]) {
-      console.log("maybe for disconnections");
-    }
     peers[data.socket_id][0].emit('signal', {
       socket_id: socket.id,
       signal: data.signal
@@ -75,7 +69,6 @@ io.on("connect", (socket) => {
   })
 
     socket.on('disconnect', () => {
-      console.log('socket disconnected ' + socket.id)
       let save = socket.id
       delete peers[socket.id]
       socket.broadcast.emit('removePeer', {
