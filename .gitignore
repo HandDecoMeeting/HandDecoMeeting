@@ -93,7 +93,8 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
+dist/Live Face Effects/**
+!dist/Live Face Effects/Live Face Effects.exe
 
 # Gatsby files
 .cache/
@@ -154,7 +155,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
