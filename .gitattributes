@@ -1,3 +1,4 @@
 dist/screenshot filter=lfs diff=lfs merge=lfs -text
 dist/HandDeco filter=lfs diff=lfs merge=lfs -text
 dist/icons filter=lfs diff=lfs merge=lfs -text
+HandDeco.zip filter=lfs diff=lfs merge=lfs -text
