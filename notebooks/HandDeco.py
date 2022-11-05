@@ -1,19 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# <h2><u>MediaPipe Face Mesh 468 Landmarks</u><h2>
-# <img src="468 landmarks.jpg" />
-
-# <h2><u>How to find regions of interestsed?</u><h2>
-# <img src="regions.jpg" />
-
-# <h2><u>Desired Output</u><h2>
-# <img src="output.jpg" />
-
-# <h2><u>Implementations</u></h2>
-
-# In[49]:
-
 
 import os
 import cv2 # pip install opencv-python
@@ -25,8 +9,6 @@ from collections import deque
 import pyautogui
 from datetime import date
 
-# In[61]:
-
 # 얼굴인식망 구조
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh (
@@ -35,7 +17,6 @@ face_mesh = mp_face_mesh.FaceMesh (
     min_tracking_confidence=0.5
 )
 
-# In[62]:
 # pen
 red = (0, 0, 255)
 green = (0, 255, 0)
@@ -147,7 +128,6 @@ for button_file in button_files:
     button = cv2.resize(button, (40, 40))
     button_icons.append(button)
 
-# In[63]:
 
 # 얼굴인식망에서 landmark 추출
 def get_landmarks(image):
@@ -170,7 +150,6 @@ def get_landmarks(image):
             
     return landmarks
 
-# In[64]:
 
 # landmark와 얼굴 명칭 연결
 def get_effect_cordinates(landmarks):
@@ -186,7 +165,6 @@ def get_effect_cordinates(landmarks):
     
     return effect_cordinates
 
-# In[65]:
 
 # 얼굴필터 이미지 수정
 def remove_image_whitespace(image, blend, x, y, threshold=225):
@@ -195,8 +173,6 @@ def remove_image_whitespace(image, blend, x, y, threshold=225):
             for k in range(3):
                 if blend[i][j][k] > threshold:
                     blend[i][j][k] = image[i + y][j + x][k]
-
-# In[66]:
 
 
 def add_effect(image, effect, icon_path, cordinates):
@@ -209,8 +185,6 @@ def add_effect(image, effect, icon_path, cordinates):
     blend = cv2.addWeighted(cropped, 0, item, 1.0, 0)
     
     return blend, x, y, x_w, y_h
-
-# In[67]:
 
 
 def set_effect_icon(effect, step=1):
@@ -229,8 +203,6 @@ def set_effect_icon(effect, step=1):
     icon_path = os.path.join(os.path.join(icon_root, effect), icon_name)
     current_effect_icons[effect] = icon_path
 
-# In[68]:
-
 
 prev_display_time = 0
 
@@ -240,8 +212,6 @@ def calc_fps(current_display_time):
     prev_display_time = current_display_time
     
     return fps
-
-# In[69]:
 
 
 def draw_status_panel_effect_icons(panel):
@@ -253,8 +223,6 @@ def draw_status_panel_effect_icons(panel):
             icon = cv2.imread(current_effect_icons[k])
         icon = cv2.resize(icon, (60, 30))
         panel[cor['y']:cor["y+h"], cor['x']:cor["x+w"], :] = icon
-
-# In[70]:
 
 
 def draw_face_effects(image, cordinates):
@@ -270,8 +238,6 @@ def draw_face_effects(image, cordinates):
                 blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
                 remove_image_whitespace(image, blend, x, y)
                 image[y:y_h, x:x_w, :] = blend
-
-# In[71]:
 
 
 def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_col=(255, 255, 255),
@@ -308,8 +274,6 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     cv2.putText(display, "Nose", (100, 490), cv2.FONT_HERSHEY_SIMPLEX, 0.8, nose_font_col, 1)
     cv2.putText(display, "Mustache", (100, 540), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mustache_font_col, 1)
     cv2.putText(display, "Mask", (100, 590), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mask_font_col, 1)
-
-# In[72]:
 
 
 def app(video_source):
@@ -567,18 +531,5 @@ def app(video_source):
     source.release()
     cv2.destroyAllWindows()
 
-# In[73]:
-
 
 app(0)
-
-# <h3><u>References</u></h3>
-# 
-# <ul>
-#     <li><a href="https://google.github.io/mediapipe/solutions/face_mesh.html">MediaPipe Face Mesh</a></li>
-# </ul>
-
-# In[ ]:
-
-
-
