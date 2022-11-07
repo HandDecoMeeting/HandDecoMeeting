@@ -32,6 +32,7 @@ from datetime import date
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh (
     #static_image_mode=False,
+    max_num_faces = 2,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
@@ -285,10 +286,10 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     display[568:598, 32:62, :] = num_icons[4]
     #display[565:595, 32:62, :] = num_icons[5]
 
-    display[220:250, 180:210, :] = num_icons[0]
-    display[220:250, 245:275, :] = num_icons[4]
+    display[205:245, 180:220, :] = button_icons[3]
+    display[205:245, 265:305, :] = button_icons[4]
 
-    display[25:65, 120:160, :] = button_icons[2]
+    display[20:60, 115:155, :] = button_icons[2]
     display[265:305, 180:220, :] = button_icons[0]
     display[265:305, 230:270, :] = button_icons[1]
 
@@ -296,9 +297,10 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     #cv2.putText(display, "FPS: {}".format(fps), (245, 28), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 192), 1)
     #cv2.putText(display, "LIVE", (35, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
     cv2.putText(display, "Exit:", (35, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-    cv2.putText(display, "Face Filters", (35, 190), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
-    cv2.putText(display, "select:     ~", (35, 240), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-    cv2.putText(display, "swipe:", (35, 290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+    cv2.putText(display, "Face Stickers", (35, 170), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
+    cv2.rectangle(display, (20, 125), (325, 625), red, 2)
+    cv2.putText(display, "select:      ~", (35, 230), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+    cv2.putText(display, "switch:", (35, 290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
     #button1 = cv2.imread("../icons/buttons/right")
     #button1 = cv2.resize(icon, (30, 30))
     #display[70:100, 250:280, :] = button1
