@@ -343,4 +343,4 @@ pip-selfcheck.json
 screenshot/**
 !screenshot/README.md
 
-legacy/
+# legacy/
