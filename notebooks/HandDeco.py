@@ -540,22 +540,18 @@ def screen_shot():
      #first find window
 
     my = pygetwindow.getWindowsWithTitle('HandDeco')[0] 
-    # quarter of screen screensize
-    
-
 
     x, y = my.topleft
     x2, y2 = my.bottomright
 
-    print(x, y, x2, y2)
     # save screenshot
-    p = pyautogui.screenshot() 
-    p.save('result.png') 
-
+    p = pyautogui.screenshot()
+    s = date.today().strftime("%Y%m%d")
+    p.save('../screenshot/' + s + str(src_cnt) + '.png') 
 
     # edit screenshot
-    im = PIL.Image.open('result.png')
+    im = PIL.Image.open('../screenshot/' + s + str(src_cnt) + '.png')
     im_crop = im.crop((x+7, y, x2-7, y2-7))
-    im_crop.save('result.png', quality=100) 
+    im_crop.save('../screenshot/' + s + str(src_cnt) + '.png')
 
 app(0)
