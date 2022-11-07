@@ -389,6 +389,7 @@ def app(video_source):
                         function = "screenshot"
                         if (src == 0):
                             pyautogui.screenshot().save('../screenshot/' + date.today().strftime("%Y%m%d") + str(src_cnt) + '.png')
+                            screen_shot()
                             src_cnt += 1
                         src = 1
 
@@ -509,7 +510,7 @@ def app(video_source):
                         continue
                     cv2.line(display, points[i][j][k - 1][:2], points[i][j][k][:2], colors[i], points[i][j][k-1][2])
 
-        cv2.imshow("Live Face Effects", display)
+        cv2.imshow("HandDeco", display)
         k = cv2.waitKeyEx(1)
             
         if k in effect_commands:
@@ -531,5 +532,30 @@ def app(video_source):
     source.release()
     cv2.destroyAllWindows()
 
+def screen_shot():
+    import pygetwindow
+    import time
+    import pyautogui
+    import PIL
+     #first find window
+
+    my = pygetwindow.getWindowsWithTitle('HandDeco')[0] 
+    # quarter of screen screensize
+    
+
+
+    x, y = my.topleft
+    x2, y2 = my.bottomright
+
+    print(x, y, x2, y2)
+    # save screenshot
+    p = pyautogui.screenshot() 
+    p.save('result.png') 
+
+
+    # edit screenshot
+    im = PIL.Image.open('result.png')
+    im_crop = im.crop((x+7, y, x2-7, y2-7))
+    im_crop.save('result.png', quality=100) 
 
 app(0)
