@@ -27,18 +27,11 @@ var constraints = {
 ////////////// CONFIG //////////////
 const configRTC = {
     iceServers: [
-        // (구축되어있는) STUN server로 구현
-        // https://www.metered.ca/tools/openrelay/
         {
-            urls: "turn:openrelay.metered.ca:80",
-            username: "openrelayproject",
-            credential: "openrelayproject",
-        },
-        {
-            urls: "turn:openrelay.metered.ca:443",
-            username: "openrelayproject",
-            credential: "openrelayproject",
-        },
+            urls: "turn:3.36.233.147:3478?transport=tcp",
+            username: "guest",
+            credential: "somepassword",
+        }
     ],
 }
 
