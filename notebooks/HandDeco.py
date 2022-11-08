@@ -13,7 +13,7 @@ from datetime import date
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh (
     #static_image_mode=False,
-    max_num_faces = 2,
+    max_num_faces = 5,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
@@ -294,17 +294,20 @@ def app(video_source):
         if ret:
             current_time = time.time()
             fps = calc_fps(current_time)
-            height, width, _ = frame.shape
+            #height, width, _ = frame.shape
             image = cv2.resize(frame, (950, 650))
-            
+            face_mesh_results = face_mesh.process(image)
             landmarks = get_landmarks(image)
-            faces = len(landmarks)
-            
-            if faces > 0:
+            face_detect = face_mesh_results.multi_face_landmarks
+            #faces = len(landmarks)
+            #if not face_detect:
+            #    continue
+            #if faces > 0:
+            if face_detect:
                 for l in landmarks:
                     cordinates = get_effect_cordinates(l)
                     draw_face_effects(image, cordinates)
-                display[:, 350:, :] = image
+            display[:, 350:, :] = image
             
             status_panel = np.zeros((650, 350, 3))
             draw_status_panel_effect_icons(status_panel)
@@ -399,7 +402,10 @@ def app(video_source):
                     elif (totalFingers == 1): #draw
                         function = "draw"
                         src = 0
-                        flag = 0
+                        if cv2.waitKeyEx(1) == 32:
+                            pass
+                        else:
+                            flag = 0
 
                     elif (totalFingers == 2): #pause
                         function = "pause"
