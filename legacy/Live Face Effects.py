@@ -1,5 +1,22 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# <h2><u>MediaPipe Face Mesh 468 Landmarks</u><h2>
+# <img src="468 landmarks.jpg" />
+
+# <h2><u>How to find regions of interestsed?</u><h2>
+# <img src="regions.jpg" />
+
+# <h2><u>Desired Output</u><h2>
+# <img src="output.jpg" />
+
+# <h2><u>Implementations</u></h2>
+
+# In[49]:
+
 
 import os
+from tkinter.tix import DisplayStyle
 import cv2 # pip install opencv-python
 import time
 import numpy as np # pip install numpy
@@ -9,15 +26,18 @@ from collections import deque
 import pyautogui
 from datetime import date
 
+# In[61]:
+
 # 얼굴인식망 구조
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh (
     #static_image_mode=False,
-    max_num_faces = 5,
+    max_num_faces = 2,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
 
+# In[62]:
 # pen
 red = (0, 0, 255)
 green = (0, 255, 0)
@@ -129,6 +149,7 @@ for button_file in button_files:
     button = cv2.resize(button, (40, 40))
     button_icons.append(button)
 
+# In[63]:
 
 # 얼굴인식망에서 landmark 추출
 def get_landmarks(image):
@@ -151,6 +172,7 @@ def get_landmarks(image):
             
     return landmarks
 
+# In[64]:
 
 # landmark와 얼굴 명칭 연결
 def get_effect_cordinates(landmarks):
@@ -166,6 +188,7 @@ def get_effect_cordinates(landmarks):
     
     return effect_cordinates
 
+# In[65]:
 
 # 얼굴필터 이미지 수정
 def remove_image_whitespace(image, blend, x, y, threshold=225):
@@ -174,6 +197,8 @@ def remove_image_whitespace(image, blend, x, y, threshold=225):
             for k in range(3):
                 if blend[i][j][k] > threshold:
                     blend[i][j][k] = image[i + y][j + x][k]
+
+# In[66]:
 
 
 def add_effect(image, effect, icon_path, cordinates):
@@ -186,6 +211,8 @@ def add_effect(image, effect, icon_path, cordinates):
     blend = cv2.addWeighted(cropped, 0, item, 1.0, 0)
     
     return blend, x, y, x_w, y_h
+
+# In[67]:
 
 
 def set_effect_icon(effect, step=1):
@@ -204,6 +231,8 @@ def set_effect_icon(effect, step=1):
     icon_path = os.path.join(os.path.join(icon_root, effect), icon_name)
     current_effect_icons[effect] = icon_path
 
+# In[68]:
+
 
 prev_display_time = 0
 
@@ -213,6 +242,8 @@ def calc_fps(current_display_time):
     prev_display_time = current_display_time
     
     return fps
+
+# In[69]:
 
 
 def draw_status_panel_effect_icons(panel):
@@ -224,6 +255,8 @@ def draw_status_panel_effect_icons(panel):
             icon = cv2.imread(current_effect_icons[k])
         icon = cv2.resize(icon, (60, 30))
         panel[cor['y']:cor["y+h"], cor['x']:cor["x+w"], :] = icon
+
+# In[70]:
 
 
 def draw_face_effects(image, cordinates):
@@ -239,6 +272,8 @@ def draw_face_effects(image, cordinates):
                 blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
                 remove_image_whitespace(image, blend, x, y)
                 image[y:y_h, x:x_w, :] = blend
+
+# In[71]:
 
 
 def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_col=(255, 255, 255),
@@ -265,7 +300,6 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     cv2.putText(display, "Face Stickers", (35, 170), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
     cv2.rectangle(display, (20, 125), (325, 625), red, 2)
     cv2.putText(display, "select:      ~", (35, 230), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-    
     cv2.putText(display, "switch:", (35, 290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
     #button1 = cv2.imread("../icons/buttons/right")
     #button1 = cv2.resize(icon, (30, 30))
@@ -277,6 +311,8 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     cv2.putText(display, "Nose", (100, 490), cv2.FONT_HERSHEY_SIMPLEX, 0.8, nose_font_col, 1)
     cv2.putText(display, "Mustache", (100, 540), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mustache_font_col, 1)
     cv2.putText(display, "Mask", (100, 590), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mask_font_col, 1)
+
+# In[72]:
 
 
 def app(video_source):
@@ -294,20 +330,17 @@ def app(video_source):
         if ret:
             current_time = time.time()
             fps = calc_fps(current_time)
-            #height, width, _ = frame.shape
+            height, width, _ = frame.shape
             image = cv2.resize(frame, (950, 650))
-            face_mesh_results = face_mesh.process(image)
+            
             landmarks = get_landmarks(image)
-            face_detect = face_mesh_results.multi_face_landmarks
-            #faces = len(landmarks)
-            #if not face_detect:
-            #    continue
-            #if faces > 0:
-            if face_detect:
+            faces = len(landmarks)
+            
+            if faces > 0:
                 for l in landmarks:
                     cordinates = get_effect_cordinates(l)
                     draw_face_effects(image, cordinates)
-            display[:, 350:, :] = image
+                display[:, 350:, :] = image
             
             status_panel = np.zeros((650, 350, 3))
             draw_status_panel_effect_icons(status_panel)
@@ -394,18 +427,14 @@ def app(video_source):
                     if (totalFingers == 0): #screenshot
                         function = "screenshot"
                         if (src == 0):
-                            # pyautogui.screenshot().save('../screenshot/' + date.today().strftime("%Y%m%d") + str(src_cnt) + '.png')
-                            screen_shot()
+                            pyautogui.screenshot().save('../screenshot/' + date.today().strftime("%Y%m%d") + str(src_cnt) + '.png')
                             src_cnt += 1
                         src = 1
 
                     elif (totalFingers == 1): #draw
                         function = "draw"
                         src = 0
-                        if cv2.waitKeyEx(1) == 32:
-                            pass
-                        else:
-                            flag = 0
+                        flag = 0
 
                     elif (totalFingers == 2): #pause
                         function = "pause"
@@ -519,7 +548,7 @@ def app(video_source):
                         continue
                     cv2.line(display, points[i][j][k - 1][:2], points[i][j][k][:2], colors[i], points[i][j][k-1][2])
 
-        cv2.imshow("HandDeco", display)
+        cv2.imshow("Live Face Effects", display)
         k = cv2.waitKeyEx(1)
             
         if k in effect_commands:
@@ -541,26 +570,18 @@ def app(video_source):
     source.release()
     cv2.destroyAllWindows()
 
-def screen_shot():
-    import pygetwindow
-    import time
-    import pyautogui
-    import PIL
-     #first find window
+# In[73]:
 
-    my = pygetwindow.getWindowsWithTitle('HandDeco')[0] 
-
-    x, y = my.topleft
-    x2, y2 = my.bottomright
-
-    # save screenshot
-    p = pyautogui.screenshot()
-    s = date.today().strftime("%Y%m%d")
-    p.save('../screenshot/' + s + str(src_cnt) + '.png') 
-
-    # edit screenshot
-    im = PIL.Image.open('../screenshot/' + s + str(src_cnt) + '.png')
-    im_crop = im.crop((x+7, y, x2-7, y2-7))
-    im_crop.save('../screenshot/' + s + str(src_cnt) + '.png')
 
 app(0)
+
+# <h3><u>References</u></h3>
+# 
+# <ul>
+#     <li><a href="https://google.github.io/mediapipe/solutions/face_mesh.html">MediaPipe Face Mesh</a></li>
+# </ul>
+
+# In[ ]:
+
+
+

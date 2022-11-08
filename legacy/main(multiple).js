@@ -32,7 +32,7 @@ async function getScreenshareWithMic(){
     const screen = await navigator.mediaDevices.getDisplayMedia(displayMediaOptions);
     const audio = await navigator.mediaDevices.getUserMedia(constraints);
     userVideo.srcObject = screen;
-    return new MediaStream([audio.getAudioTracks()[0], stream.getVideoTracks()[0]]);
+    return new MediaStream([audio.getAudioTracks()[0], screen.getVideoTracks()[0]]);
 }
 
 getScreenshareWithMic()
@@ -41,7 +41,8 @@ getScreenshareWithMic()
 
     init();
 })
-.catch(() => {
+.catch((e) => {
+    console.log(e);
   console.log("errors with the media device");
 })
 

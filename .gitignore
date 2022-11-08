@@ -154,7 +154,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+# dist/
 downloads/
 eggs/
 .eggs/
@@ -338,3 +338,9 @@ pip-selfcheck.json
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/venv,visualstudiocode,node,python
+
+# screenshots
+screenshot/**
+!screenshot/README.md
+
+# legacy/
