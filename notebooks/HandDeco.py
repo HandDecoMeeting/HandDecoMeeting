@@ -399,7 +399,10 @@ def app(video_source):
                     elif (totalFingers == 1): #draw
                         function = "draw"
                         src = 0
-                        flag = 0
+                        if cv2.waitKeyEx(1) == 32:
+                            pass
+                        else:
+                            flag = 0
 
                     elif (totalFingers == 2): #pause
                         function = "pause"
