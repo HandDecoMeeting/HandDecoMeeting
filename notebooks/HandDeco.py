@@ -251,12 +251,13 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     display[568:598, 32:62, :] = num_icons[4]
     #display[565:595, 32:62, :] = num_icons[5]
 
-    display[205:245, 180:220, :] = button_icons[3]
-    display[205:245, 265:305, :] = button_icons[4]
+    display[20:60, 115:155, :] = button_icons[2] # esc
 
-    display[20:60, 115:155, :] = button_icons[2]
-    display[265:305, 180:220, :] = button_icons[0]
-    display[265:305, 230:270, :] = button_icons[1]
+    display[240:280, 180:220, :] = button_icons[3] # num
+    display[240:280, 265:305, :] = button_icons[4]
+
+    display[290:330, 180:220, :] = button_icons[0] # arrow
+    display[290:330, 230:270, :] = button_icons[1]
 
     #cv2.circle(display, (170, 225), 80, (255, 0, 0), 2)
     #cv2.putText(display, "FPS: {}".format(fps), (245, 28), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 192), 1)
@@ -264,9 +265,8 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     cv2.putText(display, "Exit:", (35, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
     cv2.putText(display, "Face Stickers", (35, 170), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
     cv2.rectangle(display, (20, 125), (325, 625), red, 2)
-    cv2.putText(display, "select:      ~", (35, 230), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-    
-    cv2.putText(display, "switch:", (35, 290), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+    cv2.putText(display, "select:      ~", (35, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
+    cv2.putText(display, "switch:", (35, 320), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
     #button1 = cv2.imread("../icons/buttons/right")
     #button1 = cv2.resize(icon, (30, 30))
     #display[70:100, 250:280, :] = button1
@@ -347,7 +347,9 @@ def app(video_source):
         if( draw_color == red ): c_w = 1300-50
         cv2.circle(display, (c_w, 140), 18, white, 3)
 
-        cv2.putText(display, "Faces: " + str(num_faces), (128, 270), cv2.FONT_HERSHEY_SIMPLEX, 2, white, 3)
+        cv2.putText(display, "Faces: " + str(num_faces), (35, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.8, white, 1)
+        cv2.circle(display, (136, 210-7), 15, (255, 0, 0), 2)
+
         cv2.putText(display, "Hand detect: " + str(bool(hand_detect)), (1300-350, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2) # 손 측정
 
         flag = 1
