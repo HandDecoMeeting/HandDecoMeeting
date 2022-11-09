@@ -298,6 +298,7 @@ def app(video_source):
             image = cv2.resize(frame, (950, 650))
             face_mesh_results = face_mesh.process(image)
             landmarks = get_landmarks(image)
+            num_faces = len(landmarks)
             face_detect = face_mesh_results.multi_face_landmarks
             #faces = len(landmarks)
             #if not face_detect:
@@ -346,6 +347,7 @@ def app(video_source):
         if( draw_color == red ): c_w = 1300-50
         cv2.circle(display, (c_w, 140), 18, white, 3)
 
+        cv2.putText(display, "Faces: " + str(num_faces), (128, 270), cv2.FONT_HERSHEY_SIMPLEX, 2, white, 3)
         cv2.putText(display, "Hand detect: " + str(bool(hand_detect)), (1300-350, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2) # 손 측정
 
         flag = 1
