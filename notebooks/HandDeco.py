@@ -229,14 +229,14 @@ def draw_face_effects(image, cordinates):
             for effect in ["eye_left", "eye_right"]:
                 if icon_path is not None:
                     blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
-                    if all([x,y,x_w,y_h])==False:
+                    if all([x, y, x_w, y_h]) == False:
                         continue
                     remove_image_whitespace(image, blend, x, y)
                     image[y:y_h, x:x_w, :] = blend
         else: # 다른 스티커
             if icon_path is not None:
                 blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
-                if all([x,y,x_w,y_h])==False:
+                if all([x, y, x_w, y_h]) == False:
                     continue
                 remove_image_whitespace(image, blend, x, y)
                 image[y:y_h, x:x_w, :] = blend
