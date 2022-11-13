@@ -9,10 +9,9 @@ from collections import deque
 import pyautogui
 from datetime import date
 
-# 얼굴인식망 구조
+# face mesh 설정
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh (
-    #static_image_mode=False,
     max_num_faces = 5,
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
@@ -98,22 +97,21 @@ current_effect_icons = {
     "mustache": None,
     "mask": None
 }
-effect_commands = {
+effect_commands = { # 스티커 종류 선택 번호
     ord('1'): "eye",
     ord('2'): "shade",
     ord('3'): "nose",
     ord('4'): "mustache",
     ord('5'): "mask",
 }
-status_panel_effect_icon_cordinates = {
+status_panel_effect_icon_cordinates = { # 좌측 메뉴에 스티커 배치 위치
     "eye": {'y': 370, "y+h": 400, 'x': 250, "x+w": 310},
     "shade": {'y': 420, "y+h": 450, 'x': 250, "x+w": 310},
     "nose": {'y': 470, "y+h": 500, 'x': 250, "x+w": 310},
     "mustache": {'y': 520, "y+h": 550, 'x': 250, "x+w": 310},
     "mask": {'y': 570, "y+h": 600, 'x': 250, "x+w": 310},
-    #"mask": {'y': 565, "y+h": 595, 'x': 250, "x+w": 310}
 }
-inc_dec_commands = [0x270000, 0x250000] # 얼굴필터 넘기는 방향키
+inc_dec_commands = [0x270000, 0x250000] # 스티커 디자인 넘기는 좌우 방향키
 
 for effect in effects:
     icons = os.listdir(os.path.join(icon_root, effect))
@@ -130,7 +128,7 @@ for button_file in button_files:
     button_icons.append(button)
 
 
-# 얼굴인식망에서 landmark 추출
+# face mesh에서 landmark 추출
 def get_landmarks(image):
     landmarks = []
     height, width = image.shape[0:2]
@@ -152,14 +150,13 @@ def get_landmarks(image):
     return landmarks
 
 
-# landmark와 얼굴 명칭 연결
+# landmark와 얼굴 부위 연결
 def get_effect_cordinates(landmarks):
     effect_cordinates = {
         "eye_left": (landmarks[30], (landmarks[158][0], landmarks[145][1])),
         "eye_right": (landmarks[287], (landmarks[260][0], landmarks[381][1])),
         "shade": (landmarks[71], (landmarks[294][0], landmarks[119][1])),
         "nose": ((landmarks[51][0], landmarks[4][1]), (landmarks[281][0], landmarks[3][1])),
-        #"cigar": (landmarks[16], (landmarks[273][0], landmarks[195][1])),
         "mustache": ((landmarks[148][0], landmarks[3][1]), ((landmarks[148][0]+(landmarks[3][0]-landmarks[148][0])*2), landmarks[41][1])),
         "mask": (landmarks[124], (landmarks[324][0], landmarks[153][1]))
     }
@@ -167,7 +164,7 @@ def get_effect_cordinates(landmarks):
     return effect_cordinates
 
 
-# 얼굴필터 이미지 수정
+# 스티커 이미지 수정
 def remove_image_whitespace(image, blend, x, y, threshold=225):
     for i in range(blend.shape[0]):
         for j in range(blend.shape[1]):
@@ -175,7 +172,7 @@ def remove_image_whitespace(image, blend, x, y, threshold=225):
                 if blend[i][j][k] > threshold:
                     blend[i][j][k] = image[i + y][j + x][k]
 
-
+# 얼굴에 스티커 부착 이전 단계
 def add_effect(image, effect, icon_path, cordinates):
     item = cv2.imread(icon_path)
     pt1, pt2 = cordinates[effect]
@@ -183,11 +180,12 @@ def add_effect(image, effect, icon_path, cordinates):
     cropped = image[y:y_h, x:x_w, :]
     h, w, _ = cropped.shape
     item = cv2.resize(item, (w, h))
+
     blend = cv2.addWeighted(cropped, 0, item, 1.0, 0)
     
     return blend, x, y, x_w, y_h
 
-
+# 스티커 디자인 변경 (좌우 방향키로 컨트롤)
 def set_effect_icon(effect, step=1):
     effect_icon_counter[effect] += step
     
@@ -214,7 +212,7 @@ def calc_fps(current_display_time):
     
     return fps
 
-
+# 좌측 메뉴에 현재 스티커 표시
 def draw_status_panel_effect_icons(panel):
     for k, v in current_effect_icons.items():
         cor = status_panel_effect_icon_cordinates[k]
@@ -225,22 +223,22 @@ def draw_status_panel_effect_icons(panel):
         icon = cv2.resize(icon, (60, 30))
         panel[cor['y']:cor["y+h"], cor['x']:cor["x+w"], :] = icon
 
-
+# 얼굴에 스티커 부착
 def draw_face_effects(image, cordinates):
     for effect, icon_path in current_effect_icons.items():
-        if effect == "eye":
+        if effect == "eye": # 눈 스티커 (2개라 분류)
             for effect in ["eye_left", "eye_right"]:
                 if icon_path is not None:
                     blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
                     remove_image_whitespace(image, blend, x, y)
                     image[y:y_h, x:x_w, :] = blend
-        else:
+        else: # 다른 스티커
             if icon_path is not None:
                 blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
                 remove_image_whitespace(image, blend, x, y)
                 image[y:y_h, x:x_w, :] = blend
 
-
+# 좌측 메뉴 UI
 def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_col=(255, 255, 255),
                        nose_font_col=(255, 255, 255), mustache_font_col=(255, 255, 255), 
                         mask_font_col=(255, 255, 255)):
@@ -249,36 +247,27 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     display[468:498, 32:62, :] = num_icons[2]
     display[518:548, 32:62, :] = num_icons[3]
     display[568:598, 32:62, :] = num_icons[4]
-    #display[565:595, 32:62, :] = num_icons[5]
 
     display[20:60, 115:155, :] = button_icons[2] # esc
 
-    display[240:280, 180:220, :] = button_icons[3] # num
+    display[240:280, 180:220, :] = button_icons[3] # num 1,5
     display[240:280, 265:305, :] = button_icons[4]
 
-    display[290:330, 180:220, :] = button_icons[0] # arrow
+    display[290:330, 180:220, :] = button_icons[0] # arrow key
     display[290:330, 230:270, :] = button_icons[1]
 
-    #cv2.circle(display, (170, 225), 80, (255, 0, 0), 2)
-    #cv2.putText(display, "FPS: {}".format(fps), (245, 28), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 192), 1)
-    #cv2.putText(display, "LIVE", (35, 60), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
     cv2.putText(display, "Exit:", (35, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
     cv2.putText(display, "Face Stickers", (35, 170), cv2.FONT_HERSHEY_SIMPLEX, 1.1, (255, 255, 255), 2)
     cv2.rectangle(display, (20, 125), (325, 625), red, 2)
     cv2.putText(display, "select:      ~", (35, 270), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
     cv2.putText(display, "switch:", (35, 320), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 1)
-    #button1 = cv2.imread("../icons/buttons/right")
-    #button1 = cv2.resize(icon, (30, 30))
-    #display[70:100, 250:280, :] = button1
-
-    #cv2.putText(display, "{:02}".format(num_faces), (128, 270), cv2.FONT_HERSHEY_SIMPLEX, 2, (255, 0, 0), 3)
     cv2.putText(display, "Eyes", (100, 390), cv2.FONT_HERSHEY_SIMPLEX, 0.8, eye_font_col, 1)
     cv2.putText(display, "Glasses", (100, 440), cv2.FONT_HERSHEY_SIMPLEX, 0.8, shade_font_col, 1)
     cv2.putText(display, "Nose", (100, 490), cv2.FONT_HERSHEY_SIMPLEX, 0.8, nose_font_col, 1)
     cv2.putText(display, "Mustache", (100, 540), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mustache_font_col, 1)
     cv2.putText(display, "Mask", (100, 590), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mask_font_col, 1)
 
-
+# 전체 함수 실행 !
 def app(video_source):
     global current_effect, thick, draw_color, bpoints, gpoints, rpoints, thickness, green_index, red_index, black_index, src_cnt, src
 
@@ -291,6 +280,8 @@ def app(video_source):
     while True:
         ret, frame = source.read()
         frame = cv2.flip(frame, 1)
+
+        # 얼굴 스티커 기능
         if ret:
             current_time = time.time()
             fps = calc_fps(current_time)
@@ -300,16 +291,16 @@ def app(video_source):
             landmarks = get_landmarks(image)
             num_faces = len(landmarks)
             face_detect = face_mesh_results.multi_face_landmarks
-            #faces = len(landmarks)
-            #if not face_detect:
-            #    continue
-            #if faces > 0:
+
             if face_detect:
                 for l in landmarks:
                     cordinates = get_effect_cordinates(l)
                     draw_face_effects(image, cordinates)
-            display[:, 350:, :] = image
-            
+            else:
+                for k, v in current_effect_icons.items():
+                    if v != None:
+                        current_effect_icons[k] = current_effect = pre_k = None
+            display[:, 350:, :] = image  
             status_panel = np.zeros((650, 350, 3))
             draw_status_panel_effect_icons(status_panel)
             display[:, :350, :] = status_panel
@@ -329,6 +320,8 @@ def app(video_source):
         else:
             break
 
+
+        # 필기 기능
         imgRGB = cv2.cvtColor(display, cv2.COLOR_BGR2RGB) # BGR to RGB
         # imgRGB에 대하여 손이 있는지 mediapipe 연산을 통하여 찾는다
         results = hands.process(imgRGB) # searching for a hand
@@ -347,8 +340,8 @@ def app(video_source):
         if( draw_color == red ): c_w = 1300-50
         cv2.circle(display, (c_w, 140), 18, white, 3)
 
-        cv2.putText(display, "Faces: " + str(num_faces), (35, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.8, white, 1)
-        cv2.circle(display, (136, 210-7), 15, (255, 0, 0), 2)
+        cv2.putText(display, "face num: " + str(num_faces), (35, 210), cv2.FONT_HERSHEY_SIMPLEX, 0.8, white, 1)
+        cv2.circle(display, (185, 210-7), 15, (255, 0, 0), 2)
 
         cv2.putText(display, "Hand detect: " + str(bool(hand_detect)), (1300-350, 200), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2) # 손 측정
 
@@ -524,21 +517,21 @@ def app(video_source):
                     cv2.line(display, points[i][j][k - 1][:2], points[i][j][k][:2], colors[i], points[i][j][k-1][2])
 
         cv2.imshow("HandDeco", display)
+
+        # 키보드 입력
         k = cv2.waitKeyEx(1)
-            
         if k in effect_commands:
-            if k == pre_k:
+            if k == pre_k: # 이전 입력 번호와 같을 경우 스티커 해제
                 current_effect_icons[current_effect] = current_effect = pre_k = None
-            else:
+            else: # 선택 스티커 번호, 이전 입력 번호 저장
                 current_effect, pre_k = effect_commands[k], k
             
         elif k in inc_dec_commands and current_effect is not None:
-        #elif current_effect is not None:
-            if k == inc_dec_commands[0]:
+            if k == inc_dec_commands[0]: # 좌,우 방향키로 스티커 디자인 변경
                 set_effect_icon(current_effect)
             elif k == inc_dec_commands[1]:
                 set_effect_icon(current_effect, step=-1)
-        elif k == 27: #ESC 로 종료
+        elif k == 27: # ESC 로 종료
             break
 
 
