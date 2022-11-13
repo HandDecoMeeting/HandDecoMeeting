@@ -1,4 +1,3 @@
-
 import os
 import cv2 # pip install opencv-python
 import time
@@ -179,10 +178,10 @@ def add_effect(image, effect, icon_path, cordinates):
     x, y, x_w, y_h = pt1[0], pt1[1], pt2[0], pt2[1]
     cropped = image[y:y_h, x:x_w, :]
     h, w, _ = cropped.shape
+    if (h <= 0 or w <= 0 or x < 0 or y < 0 or x_w < 0 or y_h < 0):
+        return 0, 0, 0, 0, 0
     item = cv2.resize(item, (w, h))
-
     blend = cv2.addWeighted(cropped, 0, item, 1.0, 0)
-    
     return blend, x, y, x_w, y_h
 
 # 스티커 디자인 변경 (좌우 방향키로 컨트롤)
@@ -230,11 +229,15 @@ def draw_face_effects(image, cordinates):
             for effect in ["eye_left", "eye_right"]:
                 if icon_path is not None:
                     blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
+                    if all([x,y,x_w,y_h])==False:
+                        continue
                     remove_image_whitespace(image, blend, x, y)
                     image[y:y_h, x:x_w, :] = blend
         else: # 다른 스티커
             if icon_path is not None:
                 blend, x, y, x_w, y_h = add_effect(image, effect, icon_path, cordinates)
+                if all([x,y,x_w,y_h])==False:
+                    continue
                 remove_image_whitespace(image, blend, x, y)
                 image[y:y_h, x:x_w, :] = blend
 
@@ -275,7 +278,7 @@ def app(video_source):
     
     display = np.ones((650, 1300, 3), dtype="uint8")
     prev_frame_time, current_frame_time, fps = 0, 0, 0
-    source = cv2.VideoCapture(video_source)
+    source = cv2.VideoCapture(video_source, cv2.CAP_DSHOW)
     
     while True:
         ret, frame = source.read()
@@ -290,9 +293,9 @@ def app(video_source):
             face_mesh_results = face_mesh.process(image)
             landmarks = get_landmarks(image)
             num_faces = len(landmarks)
-            face_detect = face_mesh_results.multi_face_landmarks
+            #face_detect = face_mesh_results.multi_face_landmarks
 
-            if face_detect:
+            if num_faces > 0:
                 for l in landmarks:
                     cordinates = get_effect_cordinates(l)
                     draw_face_effects(image, cordinates)
