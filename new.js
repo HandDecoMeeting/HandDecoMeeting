@@ -151,7 +151,7 @@ function addPeer(id, isInit, name) {
         newCol.innerHTML = `<h3>${name}'s Screen</h3>`;
 
         let newVideo = document.createElement('video');
-        newVideo.style.width = 700;
+        newVideo.style.width = 650;
         newVideo.srcObject = stream;
         newVideo.id = id;
         newVideo.dataset.name = peers[id][1];
