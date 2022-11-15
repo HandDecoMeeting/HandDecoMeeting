@@ -15,6 +15,9 @@ face_mesh = mp_face_mesh.FaceMesh (
     min_detection_confidence=0.5,
     min_tracking_confidence=0.5
 )
+mpDraw = mp.solutions.drawing_utils
+drawSpec = mpDraw.DrawingSpec(thickness=1, circle_radius=1)
+f = 0
 
 # pen
 red = (0, 0, 255)
@@ -272,7 +275,7 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
 
 # 전체 함수 실행 !
 def app(video_source):
-    global current_effect, thick, draw_color, bpoints, gpoints, rpoints, thickness, green_index, red_index, black_index, src_cnt, src
+    global f, current_effect, thick, draw_color, bpoints, gpoints, rpoints, thickness, green_index, red_index, black_index, src_cnt, src
 
     pre_k = None
     
@@ -303,6 +306,35 @@ def app(video_source):
                 for k, v in current_effect_icons.items():
                     if v != None:
                         current_effect_icons[k] = current_effect = pre_k = None
+            
+            # 키보드 입력
+            k = cv2.waitKeyEx(1)
+            if k in effect_commands:
+                if k == pre_k: # 이전 입력 번호와 같을 경우 스티커 해제
+                    f = 0
+                    current_effect_icons[current_effect] = current_effect = pre_k = None
+                else: # 선택 스티커 번호, 이전 입력 번호 저장
+                    current_effect, pre_k = effect_commands[k], k
+                    f = 1
+            elif k in inc_dec_commands and current_effect is not None:
+                f = 0
+                if k == inc_dec_commands[0]: # 좌,우 방향키로 스티커 디자인 변경
+                    set_effect_icon(current_effect)
+                elif k == inc_dec_commands[1]:
+                    set_effect_icon(current_effect, step=-1)
+            elif k == 27: # ESC 로 종료
+                break
+
+            #face mesh 그리기
+            print(pre_k, k, f, current_effect_icons)
+            if pre_k != None and f == 1 and face_mesh_results.multi_face_landmarks:
+                if all(current_effect_icons[cur] == None for cur in current_effect_icons):
+                    for faceLms in face_mesh_results.multi_face_landmarks:
+                            mpDraw.draw_landmarks(image, faceLms,mp_face_mesh.FACEMESH_CONTOURS, drawSpec, drawSpec)
+                            for id,lm in enumerate(faceLms.landmark):
+                                ih, iw, ic = image.shape
+                                x,y = int(lm.x*iw), int(lm.y*ih)
+            
             display[:, 350:, :] = image  
             status_panel = np.zeros((650, 350, 3))
             draw_status_panel_effect_icons(status_panel)
