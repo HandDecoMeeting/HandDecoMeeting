@@ -324,9 +324,16 @@ def app(video_source):
                     set_effect_icon(current_effect, step=-1)
             elif k == 27: # ESC 로 종료
                 break
+            elif k == ord('s'):
+                print("sc")
+                screen_shot()
+                src_cnt += 1
+                cv2.putText(display, "Func: screenshot", (1300-350, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
+
+
 
             #face mesh 그리기
-            print(pre_k, k, f, current_effect_icons)
+            # print(pre_k, k, f, current_effect_icons)
             if pre_k != None and f == 1 and face_mesh_results.multi_face_landmarks:
                 if all(current_effect_icons[cur] == None for cur in current_effect_icons):
                     for faceLms in face_mesh_results.multi_face_landmarks:
@@ -426,18 +433,19 @@ def app(video_source):
                     if (totalFingers == 0): #screenshot
                         function = "screenshot"
                         if (src == 0):
+                            pass
                             # pyautogui.screenshot().save('../screenshot/' + date.today().strftime("%Y%m%d") + str(src_cnt) + '.png')
-                            screen_shot()
-                            src_cnt += 1
+                            # screen_shot()
+                            # src_cnt += 1
                         src = 1
 
                     elif (totalFingers == 1): #draw
                         function = "draw"
                         src = 0
-                        if cv2.waitKeyEx(1) == 32:
-                            pass
-                        else:
-                            flag = 0
+                        # if cv2.waitKeyEx(1) == 32:
+                        #     pass
+                        # else:
+                        flag = 0
 
                     elif (totalFingers == 2): #pause
                         function = "pause"
