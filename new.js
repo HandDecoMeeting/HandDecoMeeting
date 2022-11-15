@@ -76,7 +76,10 @@ function init() {
         let info = document.getElementById("info");
         info.innerHTML += `접속 일시: ${s}<br />이름: ${localName}<br />`;
 
-        let ppl = document.createElement('span');
+	let myinfo = document.getElementById("myInfo");
+	myInfo.innerHTML = localName + "'s Screen";        
+
+	let ppl = document.createElement('span');
         ppl.id = 'count';
         ppl.innerHTML = `참여 인원: ${data.count}명`;
         info.appendChild(ppl);
