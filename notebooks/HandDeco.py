@@ -308,27 +308,23 @@ def app(video_source):
                         current_effect_icons[k] = current_effect = pre_k = None
             
             # 키보드 입력
-            k = cv2.waitKeyEx(1)
-            if k in effect_commands:
-                if k == pre_k: # 이전 입력 번호와 같을 경우 스티커 해제
-                    f = 0
-                    current_effect_icons[current_effect] = current_effect = pre_k = None
-                else: # 선택 스티커 번호, 이전 입력 번호 저장
-                    current_effect, pre_k = effect_commands[k], k
-                    f = 1
-            elif k in inc_dec_commands and current_effect is not None:
-                f = 0
-                if k == inc_dec_commands[0]: # 좌,우 방향키로 스티커 디자인 변경
-                    set_effect_icon(current_effect)
-                elif k == inc_dec_commands[1]:
-                    set_effect_icon(current_effect, step=-1)
-            elif k == 27: # ESC 로 종료
-                break
-            elif k == ord('s'):
-                print("sc")
-                screen_shot()
-                src_cnt += 1
-                cv2.putText(display, "Func: screenshot", (1300-350, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
+            # k = cv2.waitKeyEx(1)
+            # if k in effect_commands:
+            #     if k == pre_k: # 이전 입력 번호와 같을 경우 스티커 해제
+            #         f = 0
+            #         current_effect_icons[current_effect] = current_effect = pre_k = None
+            #     else: # 선택 스티커 번호, 이전 입력 번호 저장
+            #         current_effect, pre_k = effect_commands[k], k
+            #         f = 1
+            # elif k in inc_dec_commands and current_effect is not None:
+            #     f = 0
+            #     if k == inc_dec_commands[0]: # 좌,우 방향키로 스티커 디자인 변경
+            #         set_effect_icon(current_effect)
+            #     elif k == inc_dec_commands[1]:
+            #         set_effect_icon(current_effect, step=-1)
+            # elif k == 27: # ESC 로 종료
+            #     break
+
 
 
 
@@ -546,7 +542,7 @@ def app(video_source):
                 py = int(720 * index_lm_y)
 
         else:
-            cont == 0
+            cont = 0
   
         points = [bpoints, gpoints, rpoints]
         colors = [black, green, red]
@@ -574,6 +570,13 @@ def app(video_source):
                 set_effect_icon(current_effect)
             elif k == inc_dec_commands[1]:
                 set_effect_icon(current_effect, step=-1)
+
+        elif k == ord('s'):
+            print("sc")
+            screen_shot()
+            src_cnt += 1
+            cv2.putText(display, "Func: screenshot", (1300-350, 300), cv2.FONT_HERSHEY_SIMPLEX, 1, black, 2)
+        
         elif k == 27: # ESC 로 종료
             break
 
