@@ -8,6 +8,14 @@ from collections import deque
 import pyautogui
 from datetime import date
 
+import pygetwindow
+import time
+import pyautogui
+import PIL
+
+import math
+
+
 # face mesh 설정
 mp_face_mesh = mp.solutions.face_mesh
 face_mesh = mp_face_mesh.FaceMesh (
@@ -273,6 +281,15 @@ def setup_status_panel(display, fps, eye_font_col=(255, 255, 255), shade_font_co
     cv2.putText(display, "Mustache", (100, 540), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mustache_font_col, 1)
     cv2.putText(display, "Mask", (100, 590), cv2.FONT_HERSHEY_SIMPLEX, 0.8, mask_font_col, 1)
 
+def cal_angle(p1x, p1y, p2x, p2y, p3x, p3y):
+    s1 = math.atan((p1y-p2y)/(p1x-p2x)) 
+    s2 = math.atan((p3y-p2y)/(p3x-p2x))
+
+    if ((s1 + s2) * 180 / math.pi) > 90:
+        return True
+    else:
+        return False
+
 # 전체 함수 실행 !
 def app(video_source):
     global f, current_effect, thick, draw_color, bpoints, gpoints, rpoints, thickness, green_index, red_index, black_index, src_cnt, src
@@ -418,7 +435,11 @@ def app(video_source):
                     # 2~5 번째 손가락은 마디가 3개 이므로
                     # 3번쨰 마디보다 바깥에 있다면 손가락이 펴졌다고 판정
                     for id in range(1, 5):
-                        if lmList[tipIds[id]][2] < lmList[tipIds[id] - 2][2]:
+                        # if lmList[tipIds[id]][2] < lmList[tipIds[id] - 2][2]:
+                        cal = cal_angle(lmList[tipIds[id]][1], lmList[tipIds[id]][2],
+                            lmList[tipIds[id]-2][1], lmList[tipIds[id]-2][2],
+                            lmList[tipIds[id]-3][1], lmList[tipIds[id]-3][2])
+                        if cal:
                             fingers.append(1)
                         else:
                             fingers.append(0)
@@ -585,10 +606,6 @@ def app(video_source):
     cv2.destroyAllWindows()
 
 def screen_shot():
-    import pygetwindow
-    import time
-    import pyautogui
-    import PIL
      #first find window
 
     my = pygetwindow.getWindowsWithTitle('HandDeco')[0] 
